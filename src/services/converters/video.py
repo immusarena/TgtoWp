@@ -18,6 +18,12 @@ logger = logging.getLogger(__name__)
 class VideoToWebPConverter:
     """Converter class for Video to WebP converter."""
     
+    # Whatsapp limits
+    MAX_TOTAL_DURATION_MS = 10000
+    MIN_FRAME_DURATION_MS = 8
+    MAX_FPS = 1000.0 / MIN_FRAME_DURATION_MS
+
+
     def __init__(self, width: int = -1, height: int = -1, quality: int = 40,
                 frame_cap: bool = True, max_frames: int = 180, max_size: int = None,
                 keep_aspect: bool = True, allow_upscale: bool = True, pad: bool = True,
@@ -328,16 +334,18 @@ class VideoToWebPConverter:
             
             # Set up quality config
             config = webp.WebPConfig.new(quality=quality)
+
+            frame_duration_ms = max(8, round(1000 / fps))
             
             for i, img in enumerate(frames):
                 # Convert PIL image to WebPPicture object
                 pic = webp.WebPPicture.from_pil(img)
                 # Encode frame with its calculated timestamp
-                t = round((i * 1000) / fps)
+                t = frame_duration_ms * i
                 enc.encode_frame(pic, t, config)
             
             # Assemble the final animated data
-            end_t = round((len(frames) * 1000) / fps)
+            end_t = frame_duration_ms * len(frames)
             anim_data = enc.assemble(end_t)
             
             # Write the raw bytes to buffer
@@ -388,6 +396,14 @@ class VideoToWebPConverter:
             """
             frames_to_test = self.select_frames(frames, count)
             _fps = len(frames_to_test) / self.original_duration if self.preserve_timing else self.fps
+            _fps = min(_fps, self.MAX_FPS)
+            if _fps <= 0.0: _fps = 0.1 # Avoid zero
+
+            # Cap frames so total duration stays within WhatsApp's limit
+            frame_duration_ms = max(self.MIN_FRAME_DURATION_MS, round(1000 / _fps))
+            max_allowed = self.MAX_TOTAL_DURATION_MS // frame_duration_ms
+            if len(frames_to_test) > max_allowed:
+                frames_to_test = self.select_frames(frames_to_test, max_allowed)
             
             # self.final_quality is updated accordingly inside convert() before calling binary search on frames
             # so we need not to worry about that here
@@ -402,8 +418,17 @@ class VideoToWebPConverter:
             It uses the 'frames' passed to _binary_search function.
             """
             _fps = len(frames) / self.original_duration if self.preserve_timing else self.fps
+            _fps = min(_fps, self.MAX_FPS)
+            if _fps <= 0.0: _fps = 0.1 # Avoid zero
 
-            buffer = self._create_webp_buffer(frames, quality, _fps)
+            # Cap frames so total duration stays within WhatsApp's limit
+            frame_duration_ms = max(self.MIN_FRAME_DURATION_MS, round(1000 / _fps))
+            max_allowed = self.MAX_TOTAL_DURATION_MS // frame_duration_ms
+            frames_to_encode = frames
+            if len(frames) > max_allowed:
+                frames_to_encode = self.select_frames(frames, max_allowed)
+
+            buffer = self._create_webp_buffer(frames_to_encode, quality, _fps)
             
             return buffer, buffer.getbuffer().nbytes
 
@@ -491,7 +516,16 @@ class VideoToWebPConverter:
         # ===================== Create buffer with max frames at given quality =====================
         self.final_quality = self.quality
         _fps = capped_frames / self.original_duration if self.preserve_timing else self.fps
-        if _fps <= 0.0: _fps = 1 # Avoid zero
+        _fps = min(_fps, self.MAX_FPS)
+        if _fps <= 0.0: _fps = 0.1 # Avoid zero
+
+        # Cap frames so total duration stays within WhatsApp's limit
+        frame_duration_ms = max(self.MIN_FRAME_DURATION_MS, round(1000 / _fps))
+        max_frames_for_duration = self.MAX_TOTAL_DURATION_MS // frame_duration_ms
+        if capped_frames > max_frames_for_duration:
+            final_frames = self.select_frames(final_frames, max_frames_for_duration)
+            capped_frames = len(final_frames)
+
         logger.info("Started processing... Frames: %s, Quality: %s", capped_frames, self.final_quality)
         buffer = self._create_webp_buffer(final_frames, self.final_quality, _fps)
 
