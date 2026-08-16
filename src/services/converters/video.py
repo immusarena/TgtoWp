@@ -264,13 +264,22 @@ class VideoToWebPConverter:
                     raise ValueError("Video file appears to have no frames.")
                 
 
-                # --- check duration (fallback in case metadata is wrong) ---
-                if metadata_duration is not None:
+                # duration: frame timestamps > frame count > container metadata (sometimes shhitty, so at last)
+                pts_duration = None
+                if last_frame_time is not None and last_frame_time > 0:
+                    pts_duration = last_frame_time + (1.0 / original_fps)
+                
+                frame_count_duration = total_frames / original_fps if total_frames > 0 else None
+
+                if pts_duration is not None:
+                    original_duration = pts_duration
+                elif frame_count_duration is not None:
+                    original_duration = frame_count_duration
+                elif metadata_duration is not None:
                     original_duration = metadata_duration
-                elif last_frame_time is not None and last_frame_time > 0:
-                    original_duration = last_frame_time + (1.0 / original_fps)
                 else:
-                    original_duration = total_frames / original_fps
+                    original_duration = 1.0  # fallback
+
                 original_duration = max(original_duration, 1e-6)  # prevent zero
                 
                 logger.info("Video details: resolution: %dx%d; duration: %.2fs; frames: %d; FPS: %.2f.", metadata['width'], metadata['height'], original_duration, total_frames, original_fps)
