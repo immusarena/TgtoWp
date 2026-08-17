@@ -19,6 +19,7 @@ from src.core.config import *
 from src.utils.file_helpers import *
 from src.utils.parsers import *
 from src.utils.network_tasks import NetworkTask
+from src.services.converters.anim_utils import *
 
 logger = logging.getLogger(__name__)
 
@@ -179,6 +180,8 @@ class StickerConverter:
             
             if not converted_stickers:
                 return None
+            # If any sticker in the pack is animated, wrap all static ones as animated too
+            await self._ensure_pack_animation_consistency(converted_stickers)
             
             await self._create_icon(converted_stickers[0], os.path.join(pack_temp_dir, "icon.png"))
             await self._create_metadata_files(pack_temp_dir, title, author_name)
@@ -189,6 +192,56 @@ class StickerConverter:
         except Exception as e:
             logger.error(f"Failed to create single wastickers pack: {e}")
             return None
+        
+    async def _ensure_pack_animation_consistency(self, sticker_paths: List[str]):
+        """
+        Ensure all stickers in a pack have consistent animation status.
+        
+        If any sticker is an animated WebP, all static stickers are wrapped
+        as 2-frame animated WebPs using webpmux. Stickers that fail to wrap
+        are removed from the pack to prevent crashes.
+        """
+        has_any_animated = False
+        static_paths = []
+        
+        for path in sticker_paths:
+            if is_animated_webp(path):
+                has_any_animated = True
+            else:
+                static_paths.append(path)
+        
+        if not has_any_animated or not static_paths:
+            return
+        
+        logger.info(
+            "Pack has animated stickers. Wrapping %d static sticker(s) as animated.",
+            len(static_paths)
+        )
+        
+        for path in static_paths:
+            # try to convert to animated and remove if fails
+            if not await wrap_static_as_animated(path):
+                logger.warning("Failed to wrap %s as animated, removing from pack.", path)
+                sticker_paths.remove(path)
+                try:
+                    if os.path.exists(path):
+                        os.remove(path)
+                except Exception as e:
+                    logger.error(f"Failed to remove {path}: {e}")
+                continue
+            
+            # remove if it exceeds the max animated sticker size limit.
+            file_size_kb = os.path.getsize(path) / 1024
+            if file_size_kb > MAX_ANIMATED_WEBP_SIZE_KB:
+                logger.warning(
+                    "Wrapped sticker %s exceeds size limit (%.1fKB > %dKB), removing from pack.",
+                    path, file_size_kb, MAX_ANIMATED_WEBP_SIZE_KB
+                )
+                sticker_paths.remove(path)
+                try:
+                    os.remove(path)
+                except Exception as e:
+                    logger.error(f"Failed to remove {path}: {e}")
         
     async def _create_icon(self, first_sticker_path: str, icon_path: str):
         """Create icon.png from the first sticker/emoji."""
