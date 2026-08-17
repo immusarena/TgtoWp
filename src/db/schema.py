@@ -407,6 +407,13 @@ async def init_db():
                     CREATE INDEX IF NOT EXISTS idx_junk_files_channel_id ON junk_files (channel_id)
                 """)
 
+                # ============ Ensure some data exist ============
+                await conn.execute("""
+                    INSERT INTO users (user_id, first_seen)
+                    VALUES (0, NOW())
+                    ON CONFLICT (user_id) DO NOTHING
+                """)
+
         logger.info("Database initialized successfully.")
     except (asyncpg.PostgresError, Exception) as e:
         logger.error(f"Database error during initialization: {e}", exc_info=True)
