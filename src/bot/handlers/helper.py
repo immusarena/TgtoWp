@@ -3,6 +3,7 @@ import html
 import math
 import asyncio
 import logging
+from functools import wraps
 from typing import List, Optional, Sequence, Any
 from telethon import Button, events
 from telethon.events import StopPropagation
@@ -92,7 +93,7 @@ class HelperMethods:
                 logger.info(f"Skipping TG deletion for set {set_id}. Logging as junk.")
                 await db.log_junk(channel_id, message_ids, set_id, "requested to skip TG deletion")
                 return True
-                
+
             try:
                 await self.ctx.client.delete_messages(channel_id, message_ids)
             except MessageDeleteForbiddenError as e:
@@ -370,15 +371,25 @@ def estimate_wait_time(sticker_doc_info: list) -> float:
 # decorator for checking banned users
 def check_banned(func):
     """Decorator to check if a user is banned before executing a command."""
-    async def wrapper(self, event):
+    @wraps(func)
+    async def wrapper(self, event, *args, **kwargs):
         if await db.is_banned(event.sender_id):
             logger.warning(f"Banned user {event.sender_id} tried to use the bot.")
             raise StopPropagation # Ignore
-        return await func(self, event)
+        return await func(self, event, *args, **kwargs)
     return wrapper
 
-
-
-
+def update_user_info(func):
+    """Decorator to update user info if message is sent in private chat, before executing a command."""
+    @wraps(func)
+    async def wrapper(self, event, *args, **kwargs):
+        if event.is_private:
+            user = await event.get_sender()
+            if user:
+                full_name = f"{user.first_name} {user.last_name or ''}".strip()
+                await db.add_or_update_user(user.id, user.username, full_name)
+            
+        return await func(self, event, *args, **kwargs)
+    return wrapper
 
 

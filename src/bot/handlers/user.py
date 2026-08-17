@@ -5,7 +5,7 @@ from telethon.tl.types import MessageEntityCustomEmoji
 
 from src import db
 from src.core.config import *
-from src.bot.handlers.helper import check_banned
+from src.bot.handlers.helper import check_banned, update_user_info
 from src.bot.handlers.context import BotContext
 from src.services.queue.manager import queue_manager
 from src.services.sessions.manager import Flow, session_manager
@@ -18,13 +18,10 @@ class UserCommands:
 
 
     @check_banned
+    @update_user_info
     async def start_command(self, event: events.NewMessage.Event):
         """Handle /start command."""
         user = await event.get_sender()
-        # Log user on /start
-        full_name = f"{user.first_name} {user.last_name or ''}".strip()
-        await db.add_or_update_user(user.id, user.username, full_name)
-        
         # Check for deep linking arguments
         args = event.raw_text.split()
         if len(args) > 1:
@@ -50,6 +47,7 @@ class UserCommands:
         raise StopPropagation
 
     @check_banned
+    @update_user_info
     async def help_command(self, event: events.NewMessage.Event):
         """Handle /help command."""
         buttons = [
@@ -59,6 +57,7 @@ class UserCommands:
         raise StopPropagation
 
     @check_banned
+    @update_user_info
     async def mystats_command(self, event: events.NewMessage.Event):
         """Displays the user's current status and conversion stats."""
         user = await event.get_sender()
@@ -101,17 +100,17 @@ class UserCommands:
         raise StopPropagation
 
     @check_banned
+    @update_user_info
     async def premium_command(self, event: events.NewMessage.Event):
         """Displays the user's premium status and benefits."""
         user = await event.get_sender()
-        
-        
         message_text, buttons = await self.ctx.templates.get_premium_message_text(user.id)
 
         await event.reply(message_text, buttons=buttons, parse_mode='html', link_preview=False)
         raise StopPropagation
 
     @check_banned
+    @update_user_info
     async def queue_command(self, event: events.NewMessage.Event):
         """Command to check user's position."""
         user = await event.get_sender()
@@ -139,6 +138,7 @@ class UserCommands:
         raise StopPropagation
     
     @check_banned
+    @update_user_info
     async def commands_command(self, event: events.NewMessage.Event):
         """Handles the /commands command."""
         buttons = [
@@ -148,6 +148,7 @@ class UserCommands:
         raise StopPropagation
 
     @check_banned
+    @update_user_info
     async def suggest_command(self, event: events.NewMessage.Event):
         """Handles the /suggest command."""
         message, buttons = self.ctx.templates.format_suggestion_message('daily')
@@ -155,6 +156,7 @@ class UserCommands:
         raise StopPropagation
 
     @check_banned
+    @update_user_info
     async def contact_command(self, event: events.NewMessage.Event):
         """Handles the /contact command, prompting the user to send a message."""
         user = await event.get_sender()
@@ -176,6 +178,7 @@ class UserCommands:
         raise StopPropagation
 
     @check_banned
+    @update_user_info
     async def id_command(self, event: events.NewMessage.Event):
         """Owner command to get IDs of custom emojis sent in the message."""
         if not getattr(event.message, 'entities', None):

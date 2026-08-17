@@ -5,6 +5,7 @@ from telethon.events import StopPropagation
 
 from src import db
 from src.bot.handlers.context import BotContext
+from src.bot.handlers.helper import update_user_info
 from src.core.config import DAILY_LIMIT_PREMIUM, DAILY_LIMIT_REGULAR
 
 logger = logging.getLogger(__name__)
@@ -13,6 +14,7 @@ class AdminCommands:
     def __init__(self, ctx: BotContext):
         self.ctx = ctx
 
+    @update_user_info
     async def add_premium_command(self, event: events.NewMessage.Event):
         """Admin command to add a premium user."""
         if not await db.is_admin(event.sender_id):
@@ -77,6 +79,7 @@ class AdminCommands:
         logger.info(f"User {target_user.id} granted {duration_days} days of premium by admin: {event.sender_id}")
         raise StopPropagation
     
+    @update_user_info
     async def remove_premium_command(self, event: events.NewMessage.Event):
         """Admin command to remove a premium user."""
         if not await db.is_admin(event.sender_id):
@@ -104,6 +107,7 @@ class AdminCommands:
             await event.reply(f"❌ An error occurred. Could not remove premium status.\n```{e}```")
         raise StopPropagation
 
+    @update_user_info
     async def extend_premium_command(self, event: events.NewMessage.Event):
         """Admin command to extend a premium user's subscription."""
         if not await db.is_admin(event.sender_id):
@@ -149,6 +153,7 @@ class AdminCommands:
         )
         raise StopPropagation
 
+    @update_user_info
     async def deduct_premium_command(self, event: events.NewMessage.Event):
         """Admin command to deduct days from a premium user's subscription."""
         if not await db.is_admin(event.sender_id):
@@ -211,6 +216,7 @@ class AdminCommands:
         logger.info(f"Premium of user {target_user.id} has been deducted by {abs(days_to_deduct)} days by admin: {event.sender_id}")
         raise StopPropagation
 
+    @update_user_info
     async def getstats_command(self, event: events.NewMessage.Event):
         """Admin command to get conversion stats for a specific user."""
         if not await db.is_admin(event.sender_id):
@@ -266,6 +272,7 @@ class AdminCommands:
         await event.reply(message)
         raise StopPropagation
     
+    @update_user_info
     async def _parse_user_and_reason(self, event: events.NewMessage.Event) -> tuple[Optional[object], str]:
         """
         Parses a command event to extract the target user and the reason.
@@ -292,6 +299,7 @@ class AdminCommands:
         return target_user, reason
 
     # silent ban command
+    @update_user_info
     async def sban_command(self, event: events.NewMessage.Event):
         """Admin command to SILENTLY ban a user."""
         if not await db.is_admin(event.sender_id):
@@ -320,6 +328,7 @@ class AdminCommands:
         raise StopPropagation
     
     # notified ban command 
+    @update_user_info
     async def ban_command(self, event: events.NewMessage.Event):
         """Admin command to ban a user and NOTIFY them."""
         if not await db.is_admin(event.sender_id):
@@ -360,6 +369,7 @@ class AdminCommands:
         raise StopPropagation
 
     # unban command
+    @update_user_info
     async def unban_command(self, event: events.NewMessage.Event):
         """Admin command to unban a user."""
         if not await db.is_admin(event.sender_id):

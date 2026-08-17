@@ -25,7 +25,7 @@ from src.utils.formatters import *
 from src.utils.file_helpers import *
 from src.utils.network_tasks import NetworkTask
 from src.bot.handlers.bg_task import BackGroundTask
-from src.bot.handlers.helper import HelperMethods, check_banned, estimate_wait_time
+from src.bot.handlers.helper import HelperMethods, check_banned, estimate_wait_time, update_user_info
 from src.bot.handlers.template import TemplateHelper
 from src.bot.handlers.session import SessionHandler
 from src.bot.handlers.user import UserCommands
@@ -388,6 +388,7 @@ class BotHandlers:
         return False # for cache miss or stale cache or inconsistent cache files 
 
     @check_banned
+    @update_user_info
     async def handle_message(self, event: events.NewMessage.Event):
         """
         Handle incoming messages. This is the main router for non-command messages.
@@ -1280,6 +1281,7 @@ class BotHandlers:
 
 
     @check_banned
+    @update_user_info
     async def handle_callback_query(self, event: events.CallbackQuery.Event):
         """Handle callback queries from inline keyboards."""
         user_id = event.sender_id

@@ -12,6 +12,7 @@ from telethon.events import StopPropagation
 from src import db
 from src.core.config import *
 from src.bot.handlers.context import BotContext
+from src.bot.handlers.helper import update_user_info
 from src.utils.parsers import extract_pack_name_from_url
 from src.services.queue.manager import queue_manager
 from src.services.sessions.manager import session_manager, Flow, Session
@@ -65,6 +66,7 @@ class OwnerCommands:
         raise StopPropagation
 
 
+    @update_user_info
     async def broadcast_command(self, event: events.NewMessage.Event):
         """Owner command to broadcast a message to all users."""
         
@@ -122,6 +124,7 @@ class OwnerCommands:
         )
 
 
+    @update_user_info
     async def send_command(self, event: events.NewMessage.Event):
         """Owner command to send a message to specific users with confirmation."""
         message_to_send = None
@@ -199,13 +202,14 @@ class OwnerCommands:
             text_to_send, no_forward, silent_broadcast
         )
 
+    @update_user_info
     async def gstats_command(self, event: events.NewMessage.Event):
         """Owner command to view global bot statistics."""
         message, buttons = await self.ctx.templates.get_gstats_message_and_buttons()
         await event.reply(message, buttons=buttons)
         raise StopPropagation
 
-    # owner's command
+    @update_user_info
     async def promote_command(self, event: events.NewMessage.Event):
         """Owner command to promote a user to admin."""
         if not db.is_owner(event.sender_id):
@@ -232,7 +236,7 @@ class OwnerCommands:
             logger.info(f"An error has occurred while promoting someone to admin by {event.sender_id}. Error: {e}")
         raise StopPropagation
 
-    # owner's command
+    @update_user_info
     async def demote_command(self, event: events.NewMessage.Event):
         """Owner command to demote an admin."""
         if not db.is_owner(event.sender_id):
@@ -260,6 +264,7 @@ class OwnerCommands:
         raise StopPropagation
 
 
+    @update_user_info
     async def getdb_command(self, event: events.NewMessage.Event):
         """Owner command to get a dump of the PostgreSQL database."""
         dump_path = None
@@ -325,6 +330,7 @@ class OwnerCommands:
         
         raise StopPropagation
 
+    @update_user_info
     async def getlogs_command(self, event: events.NewMessage.Event):
         """Owner command to get the log files."""
         msg_to_edit = await event.reply("⚙️ Getting log files. Please wait...")    
@@ -417,6 +423,7 @@ class OwnerCommands:
                 await msg_to_edit.edit(f"Error: An error occured while getting logs.\n**Error**: {e}")
         raise StopPropagation
     
+    @update_user_info
     async def toggle_cache_command(self, event: events.NewMessage.Event):
         """Owner command to enable or disable the caching system."""
 
@@ -436,6 +443,7 @@ class OwnerCommands:
             )
         raise StopPropagation
 
+    @update_user_info
     async def clearcache_command(self, event: events.NewMessage.Event):
         """Owner command to clear the cache for all or specific packs."""
         args = event.text.split()[1:]
@@ -503,6 +511,7 @@ class OwnerCommands:
         raise StopPropagation
 
 
+    @update_user_info
     async def refreshcache_command(self, event: events.NewMessage.Event):
         """Owner command to refresh the cache for top or specific packs."""
         if self.ctx.active_refresh_jobs:
@@ -543,6 +552,7 @@ class OwnerCommands:
         await event.reply(confirm_message, buttons=buttons)
         raise StopPropagation
 
+    @update_user_info
     async def cancelrefresh_command(self, event: events.NewMessage.Event):
         """Owner command to cancel an ongoing cache refresh operation."""
         if not self.ctx.active_refresh_jobs:
@@ -572,6 +582,7 @@ class OwnerCommands:
         await msg.edit(f"✅ Cancelled **{cancelled_count}** pending jobs from the queue.")
         raise StopPropagation
 
+    @update_user_info
     async def addcache_command(self, event: events.NewMessage.Event):
         """Owner command to add non-cached packs to the cache."""
         if self.ctx.active_add_jobs:
@@ -634,6 +645,7 @@ class OwnerCommands:
             return add_cache_sessions[0]
         return None
 
+    @update_user_info
     async def canceladdcache_command(self, event: events.NewMessage.Event):
         """Owner command to cancel an ongoing add-cache operation."""
         user_id = event.sender_id
@@ -672,6 +684,7 @@ class OwnerCommands:
         await msg.edit(f"✅ Cancelled **{cancelled_count}** pending jobs from the queue.")
         raise StopPropagation
 
+    @update_user_info
     async def done_command(self, event: events.NewMessage.Event):
         """Owner command to exit interactive add-cache mode."""
         user_id = event.sender_id
@@ -684,6 +697,7 @@ class OwnerCommands:
         # Silently ignore if not in the correct state
         raise StopPropagation
 
+    @update_user_info
     async def getjunk_command(self, event: events.NewMessage.Event):
         """Owner command to get a list of all junk files."""
         junk_records = await db.get_all_junk_files_grouped()
@@ -716,6 +730,7 @@ class OwnerCommands:
                 logger.error(f"Error removing junk files list: {e}")
         raise StopPropagation
 
+    @update_user_info
     async def clearjunk_command(self, event: events.NewMessage.Event):
         """Owner command to clear all junk file entries from the database."""
         # We need to get the count for the confirmation message
@@ -743,6 +758,7 @@ class OwnerCommands:
         )
         raise StopPropagation
 
+    @update_user_info
     async def refund_command(self, event: events.NewMessage.Event):
         """Admin command to refund a Star payment."""
         # Only the owner should be able to do this
