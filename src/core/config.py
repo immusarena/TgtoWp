@@ -152,7 +152,8 @@ BACKUPS = {
 # ========== Sticker/emoji pack constraints ==========
 # Warning: dont change these unless you know what you are doing
 MAX_STICKERS_PER_PACK = 30
-MAX_WEBP_SIZE_KB = 495 # maximum size of each WEBP sticker in kilobytes
+MAX_STATIC_WEBP_SIZE_KB = 99 # maximum size of each static WEBP sticker in kilobytes
+MAX_ANIMATED_WEBP_SIZE_KB = 495 # maximum size of each animated WEBP sticker in kilobytes
 MAX_WEBP_FRAMES = 30 # frame cap for a WEBP sticker
 TGS_QUALITY = 10  # Default quality for tgs files
 WEBM_QUALITY = 40  # Default quality for webm files

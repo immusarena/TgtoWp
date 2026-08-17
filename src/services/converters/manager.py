@@ -57,7 +57,7 @@ class StickerConverter:
             if script_name in {'video.py', 'tgs.py'}:
                 args.extend([
                     "--max-frames", str(MAX_WEBP_FRAMES),
-                    "--max-size", str(MAX_WEBP_SIZE_KB),
+                    "--max-size", str(MAX_ANIMATED_WEBP_SIZE_KB),
                     "--fast"
                     ])
 
