@@ -75,7 +75,7 @@ class HelperMethods:
             self.ctx.cache_full_notified = True
         return None
     
-    async def delete_cache(self, set_id) -> bool | None:
+    async def delete_cache(self, set_id, skip_tg_deletion=False) -> bool | None:
         """
         Attempts to remove a pack from the cache.
         If TG deletion fails (e.g., msg > 48h old), it logs the files as junk.
@@ -87,6 +87,12 @@ class HelperMethods:
         position = await db.remove_from_cache(set_id) 
         if position:
             channel_id, message_ids = position
+
+            if skip_tg_deletion:
+                logger.info(f"Skipping TG deletion for set {set_id}. Logging as junk.")
+                await db.log_junk(channel_id, message_ids, set_id, "requested to skip TG deletion")
+                return True
+                
             try:
                 await self.ctx.client.delete_messages(channel_id, message_ids)
             except MessageDeleteForbiddenError as e:
@@ -107,7 +113,7 @@ class HelperMethods:
             return None
         return True
     
-    async def delete_multiple_cache(self, set_ids: List[int]) -> dict:
+    async def delete_multiple_cache(self, set_ids: List[int], skip_tg_deletion=False) -> dict:
         """
         Deletes multiple packs from cache by iterating over them.
         Returns a dictionary with counts of success/failure.
@@ -118,14 +124,15 @@ class HelperMethods:
         results = {"succeeded": 0, "failed": 0, "not_found": 0}
 
         for set_id in set_ids:
-            status = await self.delete_cache(set_id)
+            status = await self.delete_cache(set_id, skip_tg_deletion=skip_tg_deletion)
             if status is True:
                 results["succeeded"] += 1
             elif status is False:
                 results["failed"] += 1
             else: # None
                 results["not_found"] += 1
-            await asyncio.sleep(0.5) # to be nice to Telegram API
+            if not skip_tg_deletion:
+                await asyncio.sleep(0.5) # to be nice to Telegram API
 
         return results
     

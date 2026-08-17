@@ -444,7 +444,9 @@ class OwnerCommands:
             await event.reply(
                 "ℹ️ **Usage:**\n"
                 "• `/clearcache all` - Clear the entire cache.\n"
-                "• `/clearcache <link1> <link2> ...` - Clear specific packs from the cache."
+                "• `/clearcache <link1> <link2> ...` - Clear specific packs from the cache.\n"
+                "•  `[skip]` - skip telegram deletion (saves time)."
+                "\nExample: `/clearcache all skip`"
             )
             return
 
@@ -453,7 +455,12 @@ class OwnerCommands:
         confirm_message = ""
         action_payload = {}
 
-        if args[0].lower() == 'all':
+        skip_telegram_deletion = False
+        if "skip" in args:
+            skip_telegram_deletion = True
+            args.remove("skip")
+
+        if args and args[0].lower() == 'all':
             all_packs = await db.get_all_cached_pack_ids()
             if not all_packs:
                 await event.reply("✅ The cache is already empty. Nothing to do!")
@@ -461,11 +468,12 @@ class OwnerCommands:
             
             action_type = "clearcache_all"
             confirm_message = (
-                f"🗑️ Are you sure you want to clear the **entire cache**? "
+                f"🗑️ Are you sure you want to clear the **entire cache**?\n"
                 f"This will remove **{len(all_packs)}** packs, cannot be undone, "
-                f"and may take some time to complete."
+                f"and may take some time to complete.\n"
+                + (f"**Skip is enabled**, so telegram deletion will be skipped, saving time." if skip_telegram_deletion else "")
             )
-            action_payload = {"packs_to_clear": set(all_packs)}
+            action_payload = {"packs_to_clear": set(all_packs), "skip_telegram_deletion": skip_telegram_deletion}
 
         else: # It's a list of links
             pack_names = [extract_pack_name_from_url(link) for link in args]
@@ -476,8 +484,11 @@ class OwnerCommands:
                 return
 
             action_type = "clearcache_packs"
-            confirm_message = f"🗑️ You are about to clear the cache for **{len(valid_packs)}** pack(s). Are you sure you want to proceed?"
-            action_payload = {"pack_short_names": valid_packs}
+            confirm_message = (
+                f"🗑️ You are about to clear the cache for **{len(valid_packs)}** pack(s). Are you sure you want to proceed?\n"
+                + (f"**Skip is enabled**, so telegram deletion will be skipped, saving time." if skip_telegram_deletion else "")
+            )
+            action_payload = {"pack_short_names": valid_packs, "skip_telegram_deletion": skip_telegram_deletion}
             
         self.ctx.pending_actions[action_id] = {
             "action_type": action_type,

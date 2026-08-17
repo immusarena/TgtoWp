@@ -231,6 +231,23 @@ async def get_cache_info() -> Tuple[int, Optional[asyncpg.Record]]:
             
     return count, lowest_item
 
+async def log_junk(channel_id: int, message_ids: List[int], set_id: int, reason: str):
+    """
+    Logs a list of messages as junk for manual cleanup.
+    """
+    now = utcnow()
+    pool = get_pool()
+    async with pool.acquire() as conn, conn.transaction():
+        # Log the junk files for manual cleanup
+        records_to_insert = [
+            (channel_id, msg_id, set_id, reason, now) for msg_id in message_ids
+        ]
+        await conn.executemany("""
+            INSERT INTO junk_files (channel_id, message_id, set_id, reason, logged_at)
+            VALUES ($1, $2, $3, $4, $5)
+            ON CONFLICT (channel_id, message_id) DO NOTHING
+        """, records_to_insert)
+    logger.info(f"Logged {len(message_ids)} junk files for set {set_id} in channel {channel_id} (reason: {reason}).")
 
 async def revert_cache_removal_and_log_junk(channel_id: int, message_ids: List[int], set_id: int, reason: str):
     """

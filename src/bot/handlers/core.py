@@ -1731,21 +1731,38 @@ class BotHandlers:
                 
                 elif action_type == 'clearcache_all':
                     packs_to_clear = pending_action['payload']['packs_to_clear']
-                    await event.edit(f"🗑️ Deleting all {len(packs_to_clear)} cached packs from Telegram channels...")
+                    skip_telegram_deletion = pending_action['payload']['skip_telegram_deletion']
                     
-                    results = await self.helpers.delete_multiple_cache(packs_to_clear)
-                    logger.info(f"Cache Cleared! Succeeded: {results['succeeded']}, Failed/Junked: {results['failed']}, Not Found: {results['not_found']}.")
-                    await event.edit(
-                        f"✅ **Cache Clear Operation Complete!**\n\n"
+                    if skip_telegram_deletion:
+                        await event.edit(f"🗑️ Removing **all {len(packs_to_clear)}** cached packs from database, skipping Telegram deletion...")
+                    else:
+                        await event.edit(f"🗑️ Deleting **all {len(packs_to_clear)}** cached packs from Telegram channels...")
+                    
+                    results = await self.helpers.delete_multiple_cache(packs_to_clear, skip_telegram_deletion)
+
+                    if skip_telegram_deletion:
+                        logger.info(f"Cache Removed from DB! Removed: {results['succeeded']}, Not Found: {results['not_found']}.")
+                        message = (f"✅ **Cache Clear Operation Complete!**\n\n"
+                        f"• Removed & logged as junk: `{results['succeeded']}`\n"
+                        f"• Not found in DB: `{results['not_found']}`")
+                    else:
+                        logger.info(f"Cache Cleared! Succeeded: {results['succeeded']}, Failed/Junked: {results['failed']}, Not Found: {results['not_found']}.")
+                        message = (f"✅ **Cache Clear Operation Complete!**\n\n"
                         f"• Successfully deleted: `{results['succeeded']}`\n"
                         f"• Failed (logged as junk): `{results['failed']}`\n"
-                        f"• Not found in DB: `{results['not_found']}`"
-                    )
+                        f"• Not found in DB: `{results['not_found']}`")
+                        
+                    await event.edit(message)
                     return
 
                 elif action_type == 'clearcache_packs':
                     pack_short_names = pending_action['payload']['pack_short_names']
-                    await event.edit(f"Processing {len(pack_short_names)} packs to clear from cache...")
+                    skip_telegram_deletion = pending_action['payload']['skip_telegram_deletion']
+
+                    if skip_telegram_deletion:
+                        await event.edit(f"🗑️ Removing **{len(pack_short_names)}** cached packs from database, skipping Telegram deletion...")
+                    else:
+                        await event.edit(f"🗑️ Deleting **{len(pack_short_names)}** cached packs from Telegram channels...")
 
                     success_list, fail_list, not_found_list = [], [], []
 
@@ -1755,7 +1772,7 @@ class BotHandlers:
                             not_found_list.append(f"• `{name}` (Not in stats DB)")
                             continue
                         
-                        result = await self.helpers.delete_cache(set_id)
+                        result = await self.helpers.delete_cache(set_id, skip_telegram_deletion)
                         if result is True:
                             success_list.append(f"• `{name}`")
                         elif result is False:
@@ -1764,16 +1781,24 @@ class BotHandlers:
                             not_found_list.append(f"• `{name}` (Not in cache DB)")
 
                     
-                    logger.info(f"Cache clear complete! Succeeded: {len(success_list)}, Failed/Junked: {len(fail_list)}, Not Found: {len(not_found_list)}")
                     response_message = "✅ **Cache Clearing Complete!**\n\n"
-                    if success_list:
-                        response_message += f"**Successfully Cleared:**\n" + "\n".join(success_list) + "\n\n"
-                    if fail_list:
-                        response_message += f"**Failed (Logged as Junk):**\n" + "\n".join(fail_list) + "\n\n"
-                    if not_found_list:
-                        response_message += f"**Not Found:**\n" + "\n".join(not_found_list)
+
+                    if skip_telegram_deletion:
+                        logger.info(f"Cache Removed from DB! Removed: {len(success_list)}, Not Found: {len(not_found_list)}")
+                        if success_list:
+                            response_message += f"**Successfully Removed & Logged as Junk:**\n" + "\n".join(success_list) + "\n\n"
+                        if not_found_list:
+                            response_message += f"**Not Found:**\n" + "\n".join(not_found_list)
+                    else:
+                        logger.info(f"Cache clear complete! Succeeded: {len(success_list)}, Failed/Junked: {len(fail_list)}, Not Found: {len(not_found_list)}")
+                        if success_list:
+                            response_message += f"**Successfully Deleted:**\n" + "\n".join(success_list) + "\n\n"
+                        if fail_list:
+                            response_message += f"**Failed (Logged as Junk):**\n" + "\n".join(fail_list) + "\n\n"
+                        if not_found_list:
+                            response_message += f"**Not Found:**\n" + "\n".join(not_found_list)
                     
-                    await event.edit(response_message)
+                    await event.edit(response_message[:4000] + "..." if len(response_message) > 4000 else response_message)
                     return
                 
                 elif action_type in ("refreshcache_top_n", "refreshcache_links"):
