@@ -224,26 +224,26 @@ class AdminCommands:
 
         target_user = await self.ctx.helpers.get_user_from_event(event, event.pattern_match.group(1))
         if not target_user:
-            await event.reply("ℹ️ **Usage:** `/getstats <user_id/@username>` or reply to a user's message.")
+            await event.reply("<tg-emoji emoji-id='5879785854284599288'>ℹ️</tg-emoji> <b>Usage:</b> <code>/getstats &lt;user_id/@username&gt;</code> or reply to a user's message.", parse_mode="html")
             raise StopPropagation
         
         if await db.is_user(target_user.id):
             is_premium = await db.is_premium(target_user.id)
             
             # Get user role for display
-            role = "👤 Regular User"
+            role = "Regular User <tg-emoji emoji-id='5316727448644103237'>👤</tg-emoji>"
             if db.is_owner(target_user.id):
-                role = "👑 Owner"
+                role = "Owner <tg-emoji emoji-id='5433758796289685818'>👑</tg-emoji>"
             elif await db.is_admin(target_user.id):
-                role = "👮‍♂️ Admin"
+                role = "Admin <tg-emoji emoji-id='5854973145315806460'>👮</tg-emoji>"
             elif is_premium:
-                role = "⭐ Premium User"
+                role = "Premium User <tg-emoji emoji-id='5967522716062847679'>⭐</tg-emoji>"
                 duration_left = await db.get_premium_duration_left(target_user.id)
                 if duration_left:
                     days = duration_left.days
                     hours = duration_left.seconds // 3600
                     minutes = (duration_left.seconds % 3600) // 60
-                    role += f"\n⏳ **Expires in**: {days}d {hours}h {minutes}m"
+                    role += f"\n<b>Expires in</b>: {days}d {hours}h {minutes}m <tg-emoji emoji-id='5258258882022612173'>⏳</tg-emoji>"
             
             stats = await db.get_user_stats(target_user.id)
             full_name = f"{target_user.first_name} {target_user.last_name or ''}".strip()
@@ -252,24 +252,26 @@ class AdminCommands:
             limit_str = f"{daily_usage}/{daily_limit}" if daily_limit > 0 else "Unlimited"
             
             message = (
-                f"📊 **Stats for [{full_name}](tg://user?id={target_user.id})** (`{target_user.id}`)\n\n"
-                f"**Status**: {role}\n"
-                f"**Today's Usage**: `{limit_str}`\n\n"
-                f"**Conversions Log**:\n"
-                f"  • Total Requests: `{stats['total']}`\n"
-                f"  • ✅ Succeeded: `{stats['succeeded']}`\n"
-                f"  • ❌ Failed: `{stats['failed']}`\n"
-                f"  • 🚫 Cancelled: `{stats['cancelled']}`"
+                f"<tg-emoji emoji-id='5431577498364158238'>📊</tg-emoji> <b>Stats for <a href='tg://user?id={target_user.id}'>{full_name}</a></b> (<code>{target_user.id}</code>)\n\n"
+                f"<b>Status</b>: {role}\n"
+                f"<b>Today's Usage</b>: <code>{limit_str}</code>\n\n"
+                f"<b>Conversion Stats</b>:\n"
+                f"<blockquote>"
+                f"<tg-emoji emoji-id='5258330865674494479'>🔣</tg-emoji> Total Requests: <code>{stats['total']}</code>\n"
+                f"<tg-emoji emoji-id='5260416304224936047'>✅</tg-emoji> Succeeded: <code>{stats['succeeded']}</code>\n"
+                f"<tg-emoji emoji-id='5260342697075416641'>❌</tg-emoji> Failed: <code>{stats['failed']}</code>\n"
+                f"<tg-emoji emoji-id='5258318620722733379'>🚫</tg-emoji> Cancelled: <code>{stats['cancelled']}</code>"
+                f"</blockquote>"
             )
         else:
             full_name = f"{target_user.first_name} {target_user.last_name or ''}".strip()
-            message = f"🫤 The user **[{full_name}](tg://user?id={target_user.id})** has not started the bot yet."
+            message = f"<tg-emoji emoji-id='5370849697340593527'>🫤</tg-emoji> The user <b><a href='tg://user?id={target_user.id}'>{full_name}</a></b> has not started the bot yet."
         
         if await db.is_banned(target_user.id):
-            message += "\n\n🚫 **This user has been banned.**"
+            message += "\n\n<tg-emoji emoji-id='5240241223632954241'>🚫</tg-emoji> <b>This user has been banned.</b>"
         
         logger.info(f"Stats of user {target_user.id} has been fetched by admin: {event.sender_id}")
-        await event.reply(message)
+        await event.reply(message, parse_mode='html')
         raise StopPropagation
     
     @update_user_info

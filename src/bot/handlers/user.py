@@ -88,11 +88,12 @@ class UserCommands:
             f"<tg-emoji emoji-id='5431577498364158238'>📊</tg-emoji> <b>Your Stats</b>\n\n"
             f"<b>Status:</b> {role}\n"
             f"<b>Today's Usage:</b> {limit_str}\n\n"
-            f"<b>Conversions Log:</b>\n"
-            f"  • Total Requests: {stats['total']}\n"
-            f"    <tg-emoji emoji-id='6296367896398399651'>✅</tg-emoji> Succeeded: {stats['succeeded']}\n"
-            f"    <tg-emoji emoji-id='5019523782004441717'>❌</tg-emoji> Failed: {stats['failed']}\n"
-            f"    <tg-emoji emoji-id='5319112319429523945'>🚫</tg-emoji> Cancelled: {stats['cancelled']}"
+            f"<b>Conversion Stats:</b>\n"
+            f"<blockquote>"
+            f"<tg-emoji emoji-id='5260416304224936047'>✅</tg-emoji> Succeeded: {stats['succeeded']}       \n"
+            f"<tg-emoji emoji-id='5260342697075416641'>❌</tg-emoji> Failed: {stats['failed']}       \n"
+            f"<tg-emoji emoji-id='5258318620722733379'>🚫</tg-emoji> Cancelled: {stats['cancelled']}       "
+            f"</blockquote>"
         )
         
         await event.reply(message, parse_mode='html')

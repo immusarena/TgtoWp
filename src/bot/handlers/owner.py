@@ -206,7 +206,7 @@ class OwnerCommands:
     async def gstats_command(self, event: events.NewMessage.Event):
         """Owner command to view global bot statistics."""
         message, buttons = await self.ctx.templates.get_gstats_message_and_buttons()
-        await event.reply(message, buttons=buttons)
+        await event.reply(message, buttons=buttons, parse_mode='html')
         raise StopPropagation
 
     @update_user_info

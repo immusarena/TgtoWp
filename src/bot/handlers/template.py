@@ -89,29 +89,37 @@ class TemplateHelper:
         processing_user = q_stats['processing_user'] or "None"
 
         message = (
-            f"📊 **Global Bot Statistics**\n\n"
-            f"👤 **Users:**\n"
-            f"  • Total Users: `{stats['total_users']}`\n"
-            f"  • Admins: `{stats['total_admins']}`\n"
-            f"  • Active Premium: `{stats['active_premium']}`\n"
-            f"  • Banned Users: `{stats['total_banned']}`\n\n"
-            f"⚙️ **Conversions (Overall):**\n"
-            f"  • ✅ Succeeded: `{stats['total_succeeded']}`\n"
-            f"  • ❌ Failed: `{stats['total_failed']}`\n"
-            f"  • 🚫 Cancelled: `{stats['total_cancelled']}`\n\n"
-            f"📈 **Conversions (Today):**\n"
-            f"  • ✅ Succeeded: `{stats['today_succeeded']}`\n"
-            f"  • ❌ Failed: `{stats['today_failed']}`\n"
-            f"  • 🚫 Cancelled: `{stats['today_cancelled']}`\n\n"
-            f"⏳ **Live Queue Status:**\n"
-            f"  • Waiting: `{q_stats['total_waiting']}`\n"
-            f"  • Currently Processing: {processing_user}"
+            f"<tg-emoji emoji-id='5431577498364158238'>📊</tg-emoji> <b>Global Bot Statistics</b>\n\n"
+            f"<tg-emoji emoji-id='5879770735999717115'>👤</tg-emoji> <b>Users</b>\n"
+            f"<blockquote>"
+            f"  • Total Users: <code>{stats['total_users']}</code>\n"
+            f"  • Admins: <code>{stats['total_admins']}</code>\n"
+            f"  • Active Premium: <code>{stats['active_premium']}</code>\n"
+            f"  • Banned Users: <code>{stats['total_banned']}</code>\n"
+            f"</blockquote>\n"
+            f"<tg-emoji emoji-id='6030537810509828330'>⚙️</tg-emoji> <b>Overall Stats</b>\n"
+            f"<blockquote>"
+            f"    <tg-emoji emoji-id='5260416304224936047'>✅</tg-emoji> Succeeded: <code>{stats['total_succeeded']}</code>\n"
+            f"    <tg-emoji emoji-id='5260342697075416641'>❌</tg-emoji> Failed: <code>{stats['total_failed']}</code>\n"
+            f"    <tg-emoji emoji-id='5258318620722733379'>🚫</tg-emoji> Cancelled: <code>{stats['total_cancelled']}</code>\n"
+            f"</blockquote>\n"
+            f"<tg-emoji emoji-id='5890937706803894250'>📅</tg-emoji> <b>Today's Stats</b>\n"
+            f"<blockquote>"
+            f"    <tg-emoji emoji-id='5260416304224936047'>✅</tg-emoji> Succeeded: <code>{stats['today_succeeded']}</code>\n"
+            f"    <tg-emoji emoji-id='5260342697075416641'>❌</tg-emoji> Failed: <code>{stats['today_failed']}</code>\n"
+            f"    <tg-emoji emoji-id='5258318620722733379'>🚫</tg-emoji> Cancelled: <code>{stats['today_cancelled']}</code>\n"
+            f"</blockquote>\n"
+            f"<tg-emoji emoji-id='5208429100951159058'>🔴</tg-emoji> <b>Live Queue Status</b>\n"
+            f"<blockquote>"
+            f"  • Waiting: <code>{q_stats['total_waiting']}</code>\n"
+            f"  • Currently Processing: <b>{processing_user}</b>"
+            f"</blockquote>"
         )
 
         buttons = [
-            [Button.inline("⭐ Premium Members", b"gstats_premium"), Button.inline("🏆 Top 50 Users", b"gstats_top_users")],
-            [Button.inline("👮‍♂️ Admins List", b"gstats_admins"), Button.inline("🚫 Banned List", b"gstats_banned")],
-            [Button.inline("🔄 Refresh", b"gstats_refresh")]
+            [Button.inline("Premium Users", b"gstats_premium", icon=5807868868886009920), Button.inline("Top 50 Users", b"gstats_top_users", icon=6030861234432121355)],
+            [Button.inline("Admins List", b"gstats_admins", icon=5778423822940114949), Button.inline("Banned List", b"gstats_banned", icon=5872829476143894491)],
+            [Button.inline("Refresh", b"gstats_refresh", icon=5877410604225924969)]
         ]
         return message, buttons
 

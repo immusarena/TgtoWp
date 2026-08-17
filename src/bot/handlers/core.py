@@ -169,37 +169,37 @@ class BotHandlers:
                     [Button.url("Get Started", deep_link, style="primary", icon=5793933761594789855)]
                 ]
             case 'queue':
-                message = "<tg-emoji emoji-id='5305381957524272531'>❌</tg-emoji> This command is not available in groups.\n\nPlease click the button below to see your queue position in private chat."
+                message = "<tg-emoji emoji-id='5255772095958229697'>❌</tg-emoji> This command is not available in groups.\n\nPlease click the button below to see your queue position in private chat."
                 buttons = [
                     [Button.url("Get Queue Position", deep_link, style="primary", icon=5258513401784573443)]
                 ]
             case 'mystats':
-                message = "<tg-emoji emoji-id='5305381957524272531'>❌</tg-emoji> This command is not available in groups.\n\nPlease click the button below to see your stats in private chat."
+                message = "<tg-emoji emoji-id='5255772095958229697'>❌</tg-emoji> This command is not available in groups.\n\nPlease click the button below to see your stats in private chat."
                 buttons = [
                     [Button.url("Get My Stats", deep_link, style="primary", icon=5431577498364158238)]
                 ]
             case 'premium':
-                message = "<tg-emoji emoji-id='5305381957524272531'>❌</tg-emoji> This command is not available in groups.\n\nPlease click the button below to see premium info in private chat."
+                message = "<tg-emoji emoji-id='5255772095958229697'>❌</tg-emoji> This command is not available in groups.\n\nPlease click the button below to see premium info in private chat."
                 buttons = [
                     [Button.url("Premium Info", deep_link, style="primary", icon=5967522716062847679)]
                 ]
             case 'commands':
-                message = "<tg-emoji emoji-id='5305381957524272531'>❌</tg-emoji> This command is not available in groups.\n\nPlease click the button below to see available commands in private chat."
+                message = "<tg-emoji emoji-id='5255772095958229697'>❌</tg-emoji> This command is not available in groups.\n\nPlease click the button below to see available commands in private chat."
                 buttons = [
                     [Button.url("Available Commands", deep_link, style="primary", icon=5787544344906959608)]
                 ]
             case 'contact':
-                message = "<tg-emoji emoji-id='5305381957524272531'>❌</tg-emoji> This command is not available in groups.\n\nPlease click the button below to use it in private chat."
+                message = "<tg-emoji emoji-id='5255772095958229697'>❌</tg-emoji> This command is not available in groups.\n\nPlease click the button below to use it in private chat."
                 buttons = [
                     [Button.url("Contact", deep_link, style="primary", icon=5895457880710058528)]
                 ]
             case 'suggest':
-                message = "<tg-emoji emoji-id='5305381957524272531'>❌</tg-emoji> This command is not available in groups.\n\nPlease click the button below to see the most popular sticker packs in private chat."
+                message = "<tg-emoji emoji-id='5255772095958229697'>❌</tg-emoji> This command is not available in groups.\n\nPlease click the button below to see the most popular sticker packs in private chat."
                 buttons = [
                     [Button.url("Most Popular Sticker Packs", deep_link, style="primary", icon=6284845886417669247)]
                 ]
             case _:
-                message = "<tg-emoji emoji-id='5305381957524272531'>❌</tg-emoji> This command is not available in groups.\n\nPlease click the button below to use it in private chat."
+                message = "<tg-emoji emoji-id='5255772095958229697'>❌</tg-emoji> This command is not available in groups.\n\nPlease click the button below to use it in private chat."
                 buttons = [
                     [Button.url("Continue in DM", deep_link, style="primary", icon=5793933761594789855)]
                 ]
@@ -1250,8 +1250,8 @@ class BotHandlers:
     async def _gstats_send_list(self, event: events.CallbackQuery.Event, title: str, content: str, filename: str):
         """Helper to send gstats lists, sending as a file if too long."""
 
-        buttons = [[Button.inline("⬅️ Back to Stats", b"gstats_back")]]
-        header = f"📋 <b>{title}</b>\n\n"
+        buttons = [[Button.inline("Back to Stats", b"gstats_back", icon=5877629862306385808)]]
+        header = f"<tg-emoji emoji-id='5956561916573782596'>📋</tg-emoji> <b>{title}</b>\n\n"
 
         if not content.strip():
             await event.edit(header + f"The list for <code>{title}</code> is empty.", buttons= buttons, link_preview=False, parse_mode='html')
@@ -1604,7 +1604,7 @@ class BotHandlers:
                 if action == "refresh":
                     message, buttons = await self.templates.get_gstats_message_and_buttons()
                     try:
-                        await event.edit(message, buttons=buttons)
+                        await event.edit(message, buttons=buttons, parse_mode='html')
                     except Exception as e:
                         logger.debug(f"Ignoring gstats refresh error (likely not modified): {e}")
                         pass
@@ -1641,7 +1641,7 @@ class BotHandlers:
 
                 elif action == "back":
                     message, buttons = await self.templates.get_gstats_message_and_buttons()
-                    await event.edit(message, buttons=buttons)
+                    await event.edit(message, buttons=buttons, parse_mode='html')
 
             elif data == "cancel_refresh_prompt":
                 await event.answer()
