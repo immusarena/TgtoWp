@@ -117,7 +117,7 @@ info "Updating package lists and upgrading system..."
 sudo apt update && sudo apt upgrade -y
 
 info "Installing essential packages..."
-sudo apt install unattended-upgrades ufw htop git curl unzip python3-pip python3-venv libcairo2-dev pkg-config python3-dev gcc ffmpeg postgresql postgresql-contrib -y
+sudo apt install unattended-upgrades ufw htop git curl unzip python3-pip python3-venv libcairo2-dev pkg-config python3-dev gcc ffmpeg webp postgresql postgresql-contrib -y
 sudo systemctl enable --now unattended-upgrades
 
 # --- DATABASE SETUP --------------------------------------------------------------------------------
