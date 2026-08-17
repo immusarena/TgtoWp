@@ -94,6 +94,39 @@ class VideoToWebPConverter:
         return selected_indices
     
 
+    @staticmethod
+    def _stream_has_alpha(stream) -> bool:
+        """
+        Check if a video stream has an alpha channel.
+        Detects alpha via pixel format (yuva*) or WebM alpha_mode metadata tag.
+        """
+        pix_fmt = stream.codec_context.pix_fmt or ""
+        if "yuva" in pix_fmt:
+            return True
+        if hasattr(stream, 'metadata') and stream.metadata.get('alpha_mode') == '1':
+            return True
+        return False
+
+    @staticmethod
+    def _get_alpha_codec_name(codec_name: str) -> str | None:
+        """
+        Map a codec name to its alpha-capable libvpx variant.
+        Returns None if no alpha-capable variant is available.
+        """
+        mapping = {
+            'vp9': 'libvpx-vp9',
+            'vp8': 'libvpx',
+        }
+        alpha_codec = mapping.get(codec_name)
+        if alpha_codec:
+            try:
+                av.codec.Codec(alpha_codec, 'r')
+                return alpha_codec
+            except Exception:
+                return None
+        return None
+    
+
     def _resize_frame(self, frame: Image) -> Image:
         """
         Resize a single PIL Image to target dimensions while respecting keep_aspect and allow_upscale.
@@ -226,6 +259,7 @@ class VideoToWebPConverter:
     def _extract_frames_from_video(self, video_path: str, count: int | float=float('inf')):
         """
         Decodes only required frames from a video file into a list of PIL Images.
+        Automatically detects and preserves alpha channels in VP8/VP9 WebM videos.
         """
         try:
             logger.info("Extracting frames from video...")
@@ -239,6 +273,17 @@ class VideoToWebPConverter:
                 metadata_duration = metadata["duration"]
                 original_fps = metadata["fps"]
                 total_frames = metadata["frame_count"]  # may be 0
+
+                # --- Detect alpha channel support ---
+                use_alpha = self._stream_has_alpha(stream)
+                alpha_codec_name = None
+                if use_alpha:
+                    alpha_codec_name = self._get_alpha_codec_name(stream.codec_context.codec.name)
+                    if alpha_codec_name:
+                        logger.info("Alpha channel detected. Using '%s' decoder for transparency.", alpha_codec_name)
+                    else:
+                        logger.warning("Alpha channel indicated but no suitable decoder found. Alpha will be lost.")
+                        use_alpha = False
 
                 # --- Count frames if header didn't provide it ---
                 if total_frames == 0:
@@ -254,18 +299,56 @@ class VideoToWebPConverter:
                 # which indices to keep
                 indices_to_keep = set(self._select_indices(total_frames, count))
 
-                # ---- decode pass with selective .to_image() conversion and storing ----
+                # ---- decode pass with selective conversion and storing ----
                 frames = []
                 last_frame_time = None
-                for i, frame in enumerate(container.decode(stream)):
-                    # Track last timestamp for duration fallback
-                    if frame.time is not None:
-                        last_frame_time = frame.time
-                    # convert + resize and store only selected frames
-                    if i in indices_to_keep:
-                        pil_image = frame.to_image().convert("RGBA")
-                        resized_image = self._resize_frame(pil_image)
-                        frames.append(resized_image)
+
+                if use_alpha and alpha_codec_name:
+                    # Alpha-aware decoding: use libvpx/libvpx-vp9 via manual demux+decode
+                    codec = av.codec.Codec(alpha_codec_name, 'r')
+                    ctx = av.codec.CodecContext.create(codec)
+                    ctx.width = stream.width
+                    ctx.height = stream.height
+                    ctx.thread_type = 'AUTO'
+                    ctx.open()
+
+                    frame_index = 0
+                    for packet in container.demux(stream):
+                        if packet.dts is None:
+                            continue
+                        for frame in ctx.decode(packet):
+                            if frame.time is not None:
+                                last_frame_time = frame.time
+                            if frame_index in indices_to_keep:
+                                f_rgba = frame.reformat(format='rgba')
+                                arr = f_rgba.to_ndarray()
+                                pil_image = Image.fromarray(arr)
+                                resized_image = self._resize_frame(pil_image)
+                                frames.append(resized_image)
+                            frame_index += 1
+                    # Flush the decoder
+                    for frame in ctx.decode():
+                        if frame.time is not None:
+                            last_frame_time = frame.time
+                        if frame_index in indices_to_keep:
+                            f_rgba = frame.reformat(format='rgba')
+                            arr = f_rgba.to_ndarray()
+                            pil_image = Image.fromarray(arr)
+                            resized_image = self._resize_frame(pil_image)
+                            frames.append(resized_image)
+                        frame_index += 1
+                else:
+                    # Standard decoding (no alpha)
+                    for i, frame in enumerate(container.decode(stream)):
+                        # Track last timestamp for duration fallback
+                        if frame.time is not None:
+                            last_frame_time = frame.time
+                        # convert + resize and store only selected frames
+                        if i in indices_to_keep:
+                            pil_image = frame.to_image().convert("RGBA")
+                            resized_image = self._resize_frame(pil_image)
+                            frames.append(resized_image)
+
                 if not frames:
                     raise ValueError("Video file appears to have no frames.")
                 
@@ -330,6 +413,8 @@ class VideoToWebPConverter:
 
             # Initialize Encoder Options and Encoder
             enc_opts = webp.WebPAnimEncoderOptions.new()
+            # Set background color to transparent (BGRA = 0x00000000)
+            enc_opts.ptr.anim_params.bgcolor = 0x00000000
             enc = webp.WebPAnimEncoder.new(w, h, enc_opts)
             
             # Set up quality config
