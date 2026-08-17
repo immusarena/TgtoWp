@@ -19,7 +19,8 @@ class VideoToWebPConverter:
     """Converter class for Video to WebP converter."""
     
     # Whatsapp limits
-    MAX_TOTAL_DURATION_MS = 10000
+    MAX_TOTAL_DURATION_SECONDS = 10
+    MAX_TOTAL_DURATION_MS = MAX_TOTAL_DURATION_SECONDS * 1000
     MIN_FRAME_DURATION_MS = 8
     MAX_FPS = 1000.0 / MIN_FRAME_DURATION_MS
 
@@ -297,7 +298,9 @@ class VideoToWebPConverter:
 
 
                 # which indices to keep
-                indices_to_keep = set(self._select_indices(total_frames, count))
+                capped_duration_frames = int(original_fps * self.MAX_TOTAL_DURATION_SECONDS)
+                limited_frames = min(total_frames, capped_duration_frames)
+                indices_to_keep = set(self._select_indices(limited_frames, count))
 
                 # ---- decode pass with selective conversion and storing ----
                 frames = []
@@ -373,7 +376,7 @@ class VideoToWebPConverter:
                 
                 logger.info("Video details: resolution: %dx%d; duration: %.2fs; frames: %d; FPS: %.2f.", metadata['width'], metadata['height'], original_duration, total_frames, original_fps)
 
-                return frames, original_duration
+                return frames, min(original_duration, self.MAX_TOTAL_DURATION_SECONDS)
 
         except ValueError:
             raise
