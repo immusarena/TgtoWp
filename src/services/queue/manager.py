@@ -84,7 +84,7 @@ class QueueManager:
                            estimated_seconds: float, log_id: int, priority: int,
                            is_cache_suspicious: bool, is_silent_mode: bool = False,
                            custom_title: Optional[str] = None, custom_author: Optional[str] = None) -> int:
-        """Adds a new item to the queue by inserting a row into the database."""
+        """Adds a new item to the queue by inserting a row into the database and returns the item's position in the queue."""
         item_data = {
             "message_id": message_id,
             "username": username,
@@ -112,7 +112,7 @@ class QueueManager:
         priority_str = {1: 'premium', 2: 'regular', 3: 'system'}.get(priority, 'unknown')
         logger.info(f"Added {priority_str} user {username} (ID: {user_id}) to queue for pack: {sticker_set_info['short_name']}")
 
-        # Return the user's new position in the queue
+        # Return the pack's position in the queue
         return await self.get_queue_position(user_id, log_id=log_id)
 
     async def cancel_item(self, user_id: int, log_id: int) -> bool:
@@ -169,23 +169,31 @@ class QueueManager:
         logger.info(f"Completed processing for queue item {item_id}, success: {success}")
 
     async def get_queue_position(self, user_id: int, log_id: int | None = None) -> int:
-        """Calculates a user's specific item's position in the queue."""
+        """
+        Calculates a specific item's position in the queue if log id is given otherwise 
+        the user's nearest waiting item.
+        Returns the position in the queue (1-based index), or 0 if the item is not found.
+        If the user is currently processing an item, it returns -1.
+        """
         async with self.pool.acquire() as conn, conn.transaction():
             # FIRST, check if this user has an item being processed.
             currently_processing = await conn.fetchrow(
                 "SELECT user_id FROM queue WHERE status = 'processing' LIMIT 1",
             )
-            if currently_processing and currently_processing['user_id'] == user_id:
-                return -1
             
             # If a log_id is provided, find that specific item.
-            if log_id:
+            if log_id is not None:
                 user_item = await conn.fetchrow(
                     "SELECT priority, added_at FROM queue WHERE log_id = $1",
                     log_id
                 )
             # Otherwise, find the user's nearest 'waiting' item.
             else:
+                # if user is currently processing an item, return -1
+                if currently_processing and currently_processing['user_id'] == user_id:
+                    return -1
+                
+                # else find the user's nearest waiting item.
                 user_item = await conn.fetchrow(
                     """
                     SELECT priority, added_at FROM queue 
@@ -198,7 +206,7 @@ class QueueManager:
             if not user_item:
                 return 0 # Item not found
             
-            # Now, count how many waiting items are "better" than requested one (higher priority or same priority but added earlier)
+            # Now, count how many waiting items are better than requested one (higher priority or same priority but added earlier)
             position = await conn.fetchval(
                 """
                 SELECT COUNT(*)
