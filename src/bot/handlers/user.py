@@ -50,9 +50,16 @@ class UserCommands:
     @update_user_info
     async def help_command(self, event: events.NewMessage.Event):
         """Handle /help command."""
-        buttons = [
-            [Button.inline("Back to Start", b"start", style = "primary", icon=5258236805890710909), Button.inline("Commands", b"commands", style = "success", icon=5787544344906959608)]
-        ]
+        if event.is_private:
+            buttons = [
+                [Button.inline("Back to Start", b"start", style = "primary", icon=5258236805890710909), Button.inline("Commands", b"commands", style = "success", icon=5787544344906959608)]
+            ]
+        else:
+            deep_link = f"https://t.me/{self.ctx.bot_info.username}?start=start"
+            buttons = [
+                [Button.url("Get Started", deep_link, style="primary", icon=5793933761594789855)]
+            ]
+
         await event.reply(HELP_MESSAGE, buttons=buttons, link_preview=False, parse_mode='html')
         raise StopPropagation
 
