@@ -304,7 +304,7 @@ class BotHandlers:
 
                 final_message_text += "\n<b>I'll notify you when the conversion starts!</b>"
             else:
-                final_message_text = (f"<b><tg-emoji emoji-id='6296367896398399651'>✅</tg-emoji> Added to conversion queue!</b>\n\n"
+                final_message_text = (f"<b><tg-emoji emoji-id='5336985409220001678'>✅</tg-emoji> Added to conversion queue!</b>\n\n"
                 f"<tg-emoji emoji-id='5785045099142450328'>📦</tg-emoji> Pack: <a href=\"{pack_url}\">{safe_pack_name}</a>\n"
                 f"<tg-emoji emoji-id='5821128296217185461'>📍</tg-emoji> Position: {position}\n\n"
                 f"<blockquote>I'll notify you when the conversion starts!</blockquote>")
@@ -747,7 +747,7 @@ class BotHandlers:
             and (target_cache_channel:= await self.helpers.get_cache_channel())
         ):
             if not is_silent_mode:
-                await self.ctx.client.send_message(item.chat_id, f"<tg-emoji emoji-id='6080182302397174299'>✅</tg-emoji> Conversion complete! Sending <b>{len(wastickers_files)}</b> {'file' if len(wastickers_files) == 1 else 'files'}...", link_preview=False, parse_mode='html')
+                await self.ctx.client.send_message(item.chat_id, f"<tg-emoji emoji-id='5336985409220001678'>✅</tg-emoji> Conversion complete! Sending <b>{len(wastickers_files)}</b> {'file' if len(wastickers_files) == 1 else 'files'}...", link_preview=False, parse_mode='html')
             
             all_uploads_succeeded = True
             try:
@@ -833,7 +833,7 @@ class BotHandlers:
 
         else: # caching is off or cache channels full or its a custom premium request
             if not is_silent_mode:
-                await self.ctx.client.send_message(item.chat_id, f"<tg-emoji emoji-id='6080182302397174299'>✅</tg-emoji> Conversion complete! Sending <b>{len(wastickers_files)}</b> {'file' if len(wastickers_files) == 1 else 'files'}...", link_preview=False, parse_mode='html')
+                await self.ctx.client.send_message(item.chat_id, f"<tg-emoji emoji-id='5336985409220001678'>✅</tg-emoji> Conversion complete! Sending <b>{len(wastickers_files)}</b> {'file' if len(wastickers_files) == 1 else 'files'}...", link_preview=False, parse_mode='html')
                 
                 all_uploads_succeeded = True
                 try:
