@@ -24,7 +24,7 @@ class OwnerCommands:
     def __init__(self, ctx: BotContext):
         self.ctx = ctx
     # action helper
-    async def _propose_action(self, event, action_type: str, target_ids: list, message_to_send, text_to_send, no_forward, silent_broadcast):
+    async def _preview_send_or_broadcast(self, event, action_type: str, target_ids: list, message_to_send, text_to_send, no_forward, silent_broadcast):
         """Handles the confirmation flow for /send and /broadcast."""
         action_id = os.urandom(8).hex()
 
@@ -118,7 +118,7 @@ class OwnerCommands:
             return
 
         # call the helper to prompt for confirmation, he'll handle the rest
-        await self._propose_action(
+        await self._preview_send_or_broadcast(
             event, 'broadcast', user_ids, message_to_broadcast, 
             text_to_broadcast, no_forward, silent_broadcast
         )
@@ -197,7 +197,7 @@ class OwnerCommands:
             await event.reply("❌ No message content found. Please reply to a message or type your message after the user list.")
             return
 
-        await self._propose_action(
+        await self._preview_send_or_broadcast(
             event, 'send', list(set(target_ids)), message_to_send, 
             text_to_send, no_forward, silent_broadcast
         )
