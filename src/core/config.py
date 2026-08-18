@@ -166,7 +166,7 @@ ICON_DIMENSIONS = (96, 96)
 #================ Messages ===============
 
 START_MESSAGE_FORMAT = f"""
-<tg-emoji emoji-id="5472427507842032538">🎉</tg-emoji> <b>Welcome to {{bot_username}}</b>
+<tg-emoji emoji-id="5472427507842032538">🎉</tg-emoji> <b>Welcome to <a href='https://t.me/{{bot_username}}'>{{bot_name}}</a></b>
 
 I can convert any <b>Telegram sticker or emoji pack</b> directly into <b>WhatsApp stickers</b> for you. <tg-emoji emoji-id="5334998226636390258">✅</tg-emoji>
 

@@ -23,6 +23,7 @@ class BotContext:
     converter: object              # StickerConverter
     network_task: object           # NetworkTask
     backup_manager: object         # BackupManager
+    bot_info: object               # User | Bot | None
     bot_username: str
 
     # constants

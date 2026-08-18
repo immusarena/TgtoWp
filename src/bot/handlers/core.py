@@ -57,9 +57,10 @@ class BotHandlers:
             converter=StickerConverter(client),
             network_task=NetworkTask(client),
             backup_manager=BackupManager(client),
+            bot_info=bot_info,
             bot_username=f"@{bot_info.username}",
             cache_enabled=CACHE_ENABLED,
-            START_MESSAGE=START_MESSAGE_FORMAT.format(bot_username=f"@{bot_info.username}"),
+            START_MESSAGE=START_MESSAGE_FORMAT.format(bot_username=bot_info.username, bot_name=bot_info.first_name),
             START_BUTTONS = [
             [Button.inline("Premium", b"premium", style="danger", icon=5967522716062847679), Button.inline("Help", b"help", style="success", icon=5818947586702184246)],
             [Button.url("Support Group", SUPPORT_GROUP_LINK, style="primary", icon=5895457880710058528), Button.inline("Commands", b"commands", style="primary", icon=5787544344906959608)]
