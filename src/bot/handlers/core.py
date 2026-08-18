@@ -37,6 +37,7 @@ from src.services.converters.manager import StickerConverter
 from src.services.sessions.manager import session_manager, Flow, Session
 from src.services.payments.manager import PaymentManager
 from src.services.backups.manager import BackupManager
+from src.services.lifecycle.manager import LifecycleManager
 
 if TYPE_CHECKING:
     from src.services.ha.manager import HighAvailabilityManager
@@ -71,6 +72,7 @@ class BotHandlers:
         ]
         )
         # module instances they share same ctx
+        self.lc_manager = LifecycleManager(self.ctx)
         self.admin = AdminCommands(self.ctx)
         self.owner = OwnerCommands(self.ctx)
         self.user = UserCommands(self.ctx)
@@ -79,6 +81,7 @@ class BotHandlers:
         self.helpers = HelperMethods(self.ctx)
 
         # set references in ctx
+        self.ctx.lc_manager = self.lc_manager
         self.ctx.core = self
         self.ctx.admin = self.admin
         self.ctx.owner = self.owner

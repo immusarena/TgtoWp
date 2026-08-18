@@ -23,9 +23,6 @@ logging.basicConfig(
 )
 
 logger = logging.getLogger(__name__)
-ha_manager = None
-shutdown_signals = 0
-shutdown_task = None
 notification_manager_instance: NotificationManager = None
 
 def handle_exception(loop, context):
@@ -41,45 +38,15 @@ def handle_exception(loop, context):
         # Schedule the coroutine to run safely on the loop
         asyncio.run_coroutine_threadsafe(coro, loop)
 
-async def handle_shutdown_signal(handlers: 'BotHandlers', client: 'TelegramClient'): # type: ignore
-    """
-    Handles the shutdown logic based on how many Ctrl+C signals are received.
-    """
-    global shutdown_signals
-    shutdown_signals += 1
-    
-    if shutdown_signals == 1:
-        logger.warning("⚠️ Graceful shutdown initiated (1/2). Finishing current task... ⚠️")
-        # Signal the queue processor to stop picking up new items
-        handlers.ctx.shutting_down = True
-        
-        # Wait for the current item to finish processing
-        async with handlers.ctx.processing_lock:
-            logger.warning("Current task finished. Proceeding with shutdown.")
-            # Now we can safely shut down everything else
-            if ha_manager:
-                await ha_manager.release_and_notify()
-            if client.is_connected():
-                await client.disconnect()
-            await close_pool()
-            logger.info("Bot shutdown complete.")
-
-    elif shutdown_signals >= 2:
-        logger.critical("🚨 IMMEDIATE SHUTDOWN INITIATED (2/2) 🚨")
-        # Don't wait, just release the lock and notify immediately
-        if ha_manager:
-            await ha_manager.release_and_notify()
-        if client.is_connected():
-            await client.disconnect()
-        await close_pool()
-        exit(1)
 
 
 async def main():
     """
     Initializes the Telethon client, registers handlers, and runs the bot.
     """
-    global notification_manager_instance, ha_manager, shutdown_task
+    global notification_manager_instance
+    ha_manager = None
+    client = None
     os.makedirs(DATA_DIR, exist_ok=True)
 
     #initialise the dabase connection pool of postgres
@@ -152,12 +119,14 @@ async def main():
                 logger.info("Tasks found in queue on startup, initiating queue processing.")
                 asyncio.create_task(handlers.process_queue())
         
-        # Setup the signal handler for Ctrl+C
+        # Setup the signal handler for SIGINT signals received from Ctrl+C or from any external source like PM2
         # We create a task because the signal handler itself cannot be async
         def signal_handler_wrapper():
-            global shutdown_task
-            if not shutdown_task or shutdown_task.done():
-                 shutdown_task = asyncio.create_task(handle_shutdown_signal(handlers, client))
+            lc_manager = handlers.lc_manager
+            # Only shutdown immediately if the bot is not already shutting down or restarting
+            # Or if it is shutting down but waiting for queue to finish
+            if lc_manager.get_state() in ("normal","graceful_shutdown", "graceful_restart"):
+                asyncio.create_task(lc_manager.handle_shutdown(immediate=True, call_pm2_stop=False))
 
         loop.add_signal_handler(signal.SIGINT, signal_handler_wrapper)
 
@@ -166,7 +135,7 @@ async def main():
     except Exception as e:
         logger.error(f"Failed to start or run the bot: {e}", exc_info=True)
     finally:
-        logger.info("Bot stopping... ensuring resources are released.")
+        logger.info("Applying final checks for resource cleanup...")
         if ha_manager:
             await ha_manager.release_and_notify()
         if client and client.is_connected():

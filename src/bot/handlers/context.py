@@ -10,6 +10,7 @@ if TYPE_CHECKING:
     from src.services.converters.manager import StickerConverter
     from src.services.notifications.manager import NotificationManager
     from src.services.ha.manager import HighAvailabilityManager
+    from src.services.lifecycle.manager import LifecycleManager
     from src.bot.handlers.admin import AdminCommands
     from src.bot.handlers.owner import OwnerCommands
     from src.bot.handlers.user import UserCommands
@@ -68,3 +69,4 @@ class BotContext:
     sessions: Optional['SessionHandler'] = None
     templates: Optional['TemplateHelper'] = None
     helpers: Optional['HelperMethods'] = None
+    lc_manager: Optional['LifecycleManager'] = None
