@@ -839,3 +839,71 @@ class OwnerCommands:
 
         await event.reply(message_text, parse_mode='html')        
         raise StopPropagation
+
+    @update_user_info
+    async def shutdown_command(self, event: events.NewMessage.Event):
+        """
+        Owner command to initiate bot shut down from telegram itself, 
+        gracefully or immediately as per owner's request.
+        """
+        args = event.message.text.split()[1:]
+        action_id = os.urandom(8).hex()
+
+        if args and args[0].startswith('immediate'):
+            immediate = True
+            confirm_message = (
+                f"<tg-emoji emoji-id='5420323339723881652'>⚠️</tg-emoji> Do you want to <b>STOP</b> the bot <b>IMMEDIATELY</b>?\n"
+                f"This will terminate the currently processing item, though it will be later picked upon restart."
+            )
+            buttons = [
+                [Button.inline("Yes, STOP IMMEDIATELY", data=f"confirm_action_{action_id}", style='danger')],
+                [Button.inline("Cancel", data=f"cancel_action_{action_id}", style='primary')]
+            ]
+        else:
+            immediate = False
+            confirm_message = (
+                f"<tg-emoji emoji-id='5420323339723881652'>⚠️</tg-emoji> Do you want to <b>STOP</b> the bot gracefully?\n"
+                f"This will wait till the currently processing item is finished, if any."
+            )
+            buttons = [
+                [Button.inline("Yes, STOP", data=f"confirm_action_{action_id}", style='danger')],
+                [Button.inline("Cancel", data=f"cancel_action_{action_id}", style='primary')]
+            ]
+        self.ctx.pending_actions[action_id] = {"action_type": "shutdown", "immediate": immediate, "call_pm2_stop": True}
+
+        await event.reply(confirm_message, buttons=buttons, parse_mode='html')
+        raise StopPropagation
+    
+    @update_user_info
+    async def restart_command(self, event: events.NewMessage.Event):
+        """
+        Owner command to restart the bot from telegram itself, 
+        gracefully or immediately as per owner's request.
+        """
+        args = event.message.text.split()[1:]
+        action_id = os.urandom(8).hex()
+
+        if args and args[0].startswith('immediate'):
+            immediate = True
+            confirm_message = (
+                f"<tg-emoji emoji-id='5420323339723881652'>⚠️</tg-emoji> Do you want to <b>RESTART</b> the bot <b>IMMEDIATELY</b>?\n"
+                f"This will terminate the currently processing item, though it will be later picked upon restart."
+            )
+            buttons = [
+                [Button.inline("Yes, RESTART IMMEDIATELY", data=f"confirm_action_{action_id}", style='danger')],
+                [Button.inline("Cancel", data=f"cancel_action_{action_id}", style='primary')]
+            ]
+        else:
+            immediate = False
+            confirm_message = (
+                f"<tg-emoji emoji-id='5420323339723881652'>⚠️</tg-emoji> Do you want to <b>RESTART</b> the bot gracefully?\n"
+                f"This will wait till the currently processing item is finished, if any."
+            )
+            buttons = [
+                [Button.inline("Yes, RESTART", data=f"confirm_action_{action_id}", style='danger')],
+                [Button.inline("Cancel", data=f"cancel_action_{action_id}", style='primary')]
+            ]
+        self.ctx.pending_actions[action_id] = {"action_type": "restart", "immediate": immediate, "call_pm2_restart": True}
+
+        await event.reply(confirm_message, buttons=buttons, parse_mode='html')
+        raise StopPropagation

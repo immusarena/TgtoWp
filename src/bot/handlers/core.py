@@ -4,6 +4,7 @@ Module containing various handlers for interaction with the bot.
 
 import os 
 import time
+import json
 import asyncio
 import logging
 import re
@@ -143,6 +144,8 @@ class BotHandlers:
         self.ctx.client.add_event_handler(self.owner.getjunk_command, events.NewMessage(pattern='/getjunk', func=lambda e: e.is_private and db.is_owner(e.sender_id)))
         self.ctx.client.add_event_handler(self.owner.clearjunk_command, events.NewMessage(pattern='/clearjunk', func=lambda e: e.is_private and db.is_owner(e.sender_id)))
         self.ctx.client.add_event_handler(self.owner.refund_command, events.NewMessage(pattern=r'/refund(?:@\w+)?(?:\s+([@\w\d]+))?', func=lambda e: e.is_private and db.is_owner(e.sender_id)))
+        self.ctx.client.add_event_handler(self.owner.shutdown_command, events.NewMessage(pattern=r'/shutdown(?:$|\s.*)', func=lambda e: e.is_private and db.is_owner(e.sender_id)))
+        self.ctx.client.add_event_handler(self.owner.restart_command, events.NewMessage(pattern=r'/restart(?:$|\s.*)', func=lambda e: e.is_private and db.is_owner(e.sender_id)))
 
         # Premium commands (admin use)
         self.ctx.client.add_event_handler(self.admin.add_premium_command, events.NewMessage(pattern=r'/addpremium(?:@\w+)?(?:\s+([@\w\d]+))?(?:\s+(\d+))?', func=lambda e: e.is_private))
@@ -1848,6 +1851,33 @@ class BotHandlers:
                     await event.edit(f"✅ Successfully cleared **{cleared_count}** junk file entries from the database.")
                     return
                 
+                elif action_type == 'shutdown':
+                    immediate = pending_action['immediate']
+                    call_pm2_stop = pending_action['call_pm2_stop']
+                    await event.edit("<tg-emoji emoji-id='5267434641563853196'>🛑</tg-emoji> <b>Stopping the bot...</b>", parse_mode='html')
+                    await self.ctx.lc_manager.handle_shutdown(immediate=immediate, call_pm2_stop=call_pm2_stop)
+                    return
+                elif action_type == 'restart':
+                    immediate = pending_action['immediate']
+                    call_pm2_restart = pending_action['call_pm2_restart']
+                    await event.edit("<tg-emoji emoji-id='5188481279963715781'>🚀</tg-emoji> <b>Restarting the bot...</b>", parse_mode='html')
+
+                    # Save restart info to a temp file in DATA_DIR
+                    restart_file = os.path.join(DATA_DIR, "restart_state.json")
+                    try:
+                        with open(restart_file, "w") as f:
+                            json.dump({
+                                "chat_id": event.chat_id,
+                                "message_id": event.message_id,
+                                "timestamp": time.time(),
+                                "immediate": immediate,
+                                "call_pm2_restart": call_pm2_restart
+                            }, f)
+                    except Exception as e:
+                        logger.error(f"Failed to save restart state: {e}")
+
+                    await self.ctx.lc_manager.handle_restart(immediate=immediate, call_pm2_restart=call_pm2_restart)
+                    return
             elif data.startswith("suggest_"):
                 await event.answer()
                 list_type = data.split('_', 1)[1] # 'daily' or 'all_time'

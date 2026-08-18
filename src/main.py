@@ -3,6 +3,8 @@ Main entry point for the bot.
 """
 
 import sys
+import json
+import time
 import logging
 import asyncio
 import os
@@ -130,7 +132,43 @@ async def main():
 
         loop.add_signal_handler(signal.SIGINT, signal_handler_wrapper)
 
-        # The bot will run until you press Ctrl+C
+        
+        # Check if the bot was restarted via command
+        restart_file = os.path.join(DATA_DIR, "restart_state.json")
+        if os.path.exists(restart_file):
+            try:
+                with open(restart_file, "r") as f:
+                    restart_info = json.load(f)
+                
+                # Delete the temp file immediately
+                os.remove(restart_file)
+                
+                chat_id = restart_info.get("chat_id")
+                message_id = restart_info.get("message_id")
+                restart_time = restart_info.get("timestamp")
+                duration_secs = (time.time() - restart_time) if restart_time else 0.0
+                immediate = restart_info.get("immediate")
+                call_pm2_restart = restart_info.get("call_pm2_restart")
+                
+                if immediate:
+                    success_text = f"<tg-emoji emoji-id='5336985409220001678'>✅</tg-emoji> <b>Restart successful!</b> Bot is back online in <code>{duration_secs:.1f}</code>s."
+                else:
+                    success_text = f"<tg-emoji emoji-id='5336985409220001678'>✅</tg-emoji> <b>Restart successful!</b> Took <code>{duration_secs:.1f}</code>s."
+                
+                try:
+                    await client.edit_message(chat_id, message_id, success_text, parse_mode='html')
+                except Exception:
+                    await client.send_message(chat_id, success_text, reply_to=message_id, parse_mode='html')
+            except Exception as e:
+                logger.error(f"Failed to send post-restart notification: {e}")
+            finally:
+                try:
+                    if os.path.exists(restart_file):
+                        os.remove(restart_file)
+                except:
+                    pass
+        
+        # this will block the main here and and keep the event loop running until the client is disconnected
         await client.run_until_disconnected()
     except Exception as e:
         logger.error(f"Failed to start or run the bot: {e}", exc_info=True)
