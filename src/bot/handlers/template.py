@@ -89,7 +89,7 @@ class TemplateHelper:
         processing_user = q_stats['processing_user'] or "None"
 
         message = (
-            f"<tg-emoji emoji-id='5431577498364158238'>📊</tg-emoji> <b>Global Bot Statistics</b>\n\n"
+            f"<tg-emoji emoji-id='5431577498364158238'>📊</tg-emoji> <b>Global Bot Statistics                            </b>\n\n"
             f"<tg-emoji emoji-id='5879770735999717115'>👤</tg-emoji> <b>Users</b>\n"
             f"<blockquote>"
             f"  • Total Users: <code>{stats['total_users']}</code>\n"
