@@ -4,6 +4,12 @@ from dataclasses import dataclass, field
 from telethon import TelegramClient
 
 if TYPE_CHECKING:
+    from src.utils.network_tasks import NetworkTask
+    from src.services.backups.manager import BackupManager
+    from src.services.payments.manager import PaymentManager
+    from src.services.converters.manager import StickerConverter
+    from src.services.notifications.manager import NotificationManager
+    from src.services.ha.manager import HighAvailabilityManager
     from src.bot.handlers.admin import AdminCommands
     from src.bot.handlers.owner import OwnerCommands
     from src.bot.handlers.user import UserCommands
@@ -18,11 +24,12 @@ class BotContext:
 
     # immutable (set once at init)
     client: TelegramClient
-    notification_manager: object   # NotificationManager
-    payment_manager: object        # PaymentManager
-    converter: object              # StickerConverter
-    network_task: object           # NetworkTask
-    backup_manager: object         # BackupManager
+    ha_manager: 'HighAvailabilityManager'
+    notification_manager: 'NotificationManager'
+    payment_manager: 'PaymentManager'
+    converter: 'StickerConverter'
+    network_task: 'NetworkTask'
+    backup_manager: 'BackupManager'
     bot_info: object               # User | Bot | None
     bot_username: str
 

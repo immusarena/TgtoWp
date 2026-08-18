@@ -15,7 +15,7 @@ from telethon.errors import UserIsBlockedError
 from telethon.events import StopPropagation
 from telethon.tl.types import DocumentAttributeSticker, Message
 from telethon.extensions import html as telethon_html
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 
 from src import db
 from src.core.config import *
@@ -35,16 +35,19 @@ from src.bot.handlers.context import BotContext
 from src.services.queue.manager import queue_manager, SYSTEM_PRIORITY, REGULAR_USER_PRIORITY, PREMIUM_USER_PRIORITY
 from src.services.converters.manager import StickerConverter
 from src.services.sessions.manager import session_manager, Flow, Session
-from src.services.notifications.manager import NotificationManager
 from src.services.payments.manager import PaymentManager
 from src.services.backups.manager import BackupManager
 
+if TYPE_CHECKING:
+    from src.services.ha.manager import HighAvailabilityManager
+    from src.services.notifications.manager import NotificationManager
+    
 logger = logging.getLogger(__name__)
 
 
 
 class BotHandlers:
-    def __init__(self, client: TelegramClient, bot_info, notification_manager: NotificationManager):
+    def __init__(self, client: TelegramClient, bot_info, notification_manager: 'NotificationManager', ha_manager: 'HighAvailabilityManager'):
         """
         Initializes the bot handlers with the Telethon client and other necessary components.
         """
@@ -53,6 +56,7 @@ class BotHandlers:
         self.ctx = BotContext(
             client=client,
             notification_manager=notification_manager,
+            ha_manager=ha_manager,
             payment_manager=PaymentManager(client, notification_manager),
             converter=StickerConverter(client),
             network_task=NetworkTask(client),
