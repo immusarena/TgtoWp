@@ -29,16 +29,33 @@ notification_manager_instance: NotificationManager = None
 
 def handle_exception(loop, context):
     """Global exception handler for the asyncio loop to catch unhandled errors."""
-    exc = context.get("exception", context["message"])
-    logger.critical(f"Caught an unhandled exception in a task: {exc}", exc_info=exc)
+    exc = context.get("exception")
+    message = context.get("message", "Unhandled error in asyncio task")
+
+    # Ignore standard lifecycle cancellation and process exit signals
+    if isinstance(exc, (asyncio.CancelledError, KeyboardInterrupt, SystemExit)):
+        return
+
+    if exc:
+        logger.critical(f"Caught an unhandled exception in a task: {exc}", exc_info=exc)
+    else:
+        logger.critical(f"Caught an unhandled error in a task: {message}")
     
-    if notification_manager_instance:
-        # Create a coroutine to send the notification via our manager
-        coro = notification_manager_instance.send_uncaught_exception(
-            (type(exc), exc, exc.__traceback__)
-        )
-        # Schedule the coroutine to run safely on the loop
-        asyncio.run_coroutine_threadsafe(coro, loop)
+    # Only attempt to send Telegram notification if the loop is active and the client is connected
+    if (
+        notification_manager_instance
+        and notification_manager_instance.client
+        and notification_manager_instance.client.is_connected()
+        and loop.is_running()
+        and not loop.is_closed()
+    ):
+        try:
+            exc_payload = (type(exc), exc, exc.__traceback__) if exc else message
+            loop.create_task(
+                notification_manager_instance.send_uncaught_exception(exc_payload)
+            )
+        except Exception as e:
+            logger.error(f"Failed to schedule uncaught exception notification: {e}")
 
 
 

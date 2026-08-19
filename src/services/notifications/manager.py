@@ -21,6 +21,10 @@ class NotificationManager:
         if not self.group_id or not config or not config.get("enabled"):
             return
 
+        if not self.client or not self.client.is_connected():
+            logger.warning(f"Cannot send notification '{notification_type}': Telegram client is not connected.")
+            return
+
         mention_str = ""
         if config.get("mention_admins") and self.admins_to_mention:
             # Create invisible mentions that still ping
@@ -102,21 +106,67 @@ class NotificationManager:
 
     async def send_uncaught_exception(self, exc_info):
         """Sends a notification for an unhandled exception in the event loop."""
-        exc_type, exc_value, exc_tb = exc_info
-        tb_str = "".join(traceback.format_exception(exc_type, exc_value, exc_tb))
-        
-        # Keep it under Telegram's message limit
-        if len(tb_str) > 3500:
-            tb_str = tb_str[:1750] + "\n...\n" + tb_str[-1750:]
+        try:
+            exc_type = None
+            exc_value = None
+            exc_tb = None
 
-        safe_tb = html.escape(tb_str)
-        
-        message = (
-            f"<tg-emoji emoji-id='5276032951342088188'>💥</tg-emoji> <b><u>CRITICAL: Uncaught Exception</u></b> <tg-emoji emoji-id='5276032951342088188'>💥</tg-emoji>\n\n"
-            f"An unhandled exception occurred in a background task. The bot might be in an unstable state.\n\n"
-            f"<tg-emoji emoji-id='5956561916573782596'>🗒️</tg-emoji> <b>Traceback:</b>\n<pre><code>{safe_tb}</code></pre>"
-        )
-        await self._send_notification("uncaught_exception", message)
+            if isinstance(exc_info, tuple) and len(exc_info) == 3:
+                exc_type, exc_value, exc_tb = exc_info
+            elif isinstance(exc_info, BaseException):
+                exc_type = type(exc_info)
+                exc_value = exc_info
+                exc_tb = exc_info.__traceback__
+            else:
+                exc_value = exc_info
+
+            # Determine error type name
+            if isinstance(exc_type, type):
+                error_type = exc_type.__name__
+            elif isinstance(exc_value, BaseException):
+                error_type = type(exc_value).__name__
+            elif exc_type:
+                error_type = str(exc_type)
+            else:
+                error_type = "Unknown"
+
+            # Determine error value / message
+            if isinstance(exc_value, BaseException):
+                error_value = str(exc_value) or repr(exc_value)
+            elif exc_value is not None:
+                error_value = str(exc_value)
+            else:
+                error_value = "N/A"
+
+            # Generate formatted traceback
+            if exc_type and exc_value and exc_tb:
+                tb_str = "".join(traceback.format_exception(exc_type, exc_value, exc_tb))
+            elif isinstance(exc_value, BaseException):
+                tb_str = "".join(traceback.format_exception(type(exc_value), exc_value, exc_value.__traceback__))
+            elif exc_tb:
+                tb_str = "".join(traceback.format_tb(exc_tb))
+            else:
+                tb_str = str(exc_info)
+
+            # Keep it under Telegram's message limit
+            if len(tb_str) > 3000:
+                tb_str = tb_str[:1500] + "\n...\n" + tb_str[-1500:]
+
+            safe_error_type = html.escape(error_type)
+            safe_error_value = html.escape(error_value)
+            safe_tb = html.escape(tb_str)
+
+            message = (
+                f"<tg-emoji emoji-id='5276032951342088188'>💥</tg-emoji> <b><u>CRITICAL: Uncaught Exception</u></b>\n\n"
+                f"An unhandled exception occurred in a background task. The bot might be in an unstable state.\n\n"
+                f"<tg-emoji emoji-id='5881986900469748194'>🛑</tg-emoji> <b>Error Type:</b> <code>{safe_error_type}</code>\n"
+                f"<tg-emoji emoji-id='5879785854284599288'>💬</tg-emoji> <b>Error Value:</b> <code>{safe_error_value}</code>\n\n"
+                f"<tg-emoji emoji-id='5956561916573782596'>🗒️</tg-emoji> <b>Traceback:</b>\n"
+                f"<pre><code>{safe_tb}</code></pre>"
+            )
+            await self._send_notification("uncaught_exception", message)
+        except Exception as e:
+            logger.error(f"Failed to format or send uncaught exception notification: {e}")
     
     async def send_cache_delete_failure(self, channel_id, message_ids, error):
         """Sends a notification for a failure in deleting cache files."""
