@@ -9,3 +9,4 @@ extra_shits/
 *.db
 .env
 /storage/
+/tests/
