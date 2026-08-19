@@ -165,8 +165,8 @@ ICON_DIMENSIONS = (96, 96)
 
 #================ Messages ===============
 
-START_MESSAGE_FORMAT = f"""
-<tg-emoji emoji-id="5472427507842032538">🎉</tg-emoji> <b>Welcome to <a href='https://t.me/{{bot_username}}'>{{bot_name}}</a></b>
+START_MESSAGE_FORMAT = (
+f"""<tg-emoji emoji-id="5472427507842032538">🎉</tg-emoji> <b>Welcome to <a href='https://t.me/{{bot_username}}'>{{bot_name}}</a></b>
 
 I can convert any <b>Telegram sticker or emoji pack</b> directly into <b>WhatsApp stickers</b> for you. <tg-emoji emoji-id="5334998226636390258">✅</tg-emoji>
 
@@ -174,11 +174,11 @@ I can convert any <b>Telegram sticker or emoji pack</b> directly into <b>WhatsAp
 • Send me a sticker or emoji pack link
 • Or just send a sticker or emoji from the pack you want.
 
-For a full guide on features and how to import the stickers to WhatsApp, please use the /help command.
-
-<tg-emoji emoji-id="5447644880824181073">⚠️</tg-emoji> <b>Note:</b> You must be a member of following channels/groups to use this bot:
-{_channel_list_str}
-"""
+For a full guide on features and how to import the stickers to WhatsApp, please use the /help command.""" 
++ 
+(f"""\n\n<tg-emoji emoji-id="5447644880824181073">⚠️</tg-emoji> <b>Note:</b> You must be a member of following channels/groups to use this bot:
+{_channel_list_str}""" if REQUIRED_CHANNELS else "")
+)
 
 HELP_MESSAGE = f"""
 <tg-emoji emoji-id="5388953246486269495">📖</tg-emoji> <b>Help Guide</b>
