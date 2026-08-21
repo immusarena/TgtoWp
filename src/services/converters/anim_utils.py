@@ -7,20 +7,54 @@ from typing import Optional
 logger = logging.getLogger(__name__)
 
 
-def is_animated_webp(filepath: str) -> bool:
+def has_webp_anim_container(filepath: str) -> bool:
     """
-    Check if a WebP file is animated based on number of frames.
+    Check if a WebP file has an animation container (VP8X ANIM flag set).
     """
+    try:
+        with open(filepath, "rb") as f:
+            header = f.read(30)
+            if len(header) >= 21 and header[:4] == b"RIFF" and header[8:12] == b"WEBP":
+                if header[12:16] == b"VP8X":
+                    flags = header[20]
+                    return bool(flags & 0x02)  # Bit 1 is Animation flag
+        return False
+    except Exception:
+        return False
+
+def is_animated_webp(filepath: str, sanitize_single_frame: bool = True) -> bool:
+    """
+    Check if a WebP file is animated (>= 2 frames).
+    If it is a single frame WebP with an animation container and sanitize_single_frame is True,
+    it converts it in-place to a genuine static WebP and returns False.
+    """
+    temp_path = f"{filepath}.tmp.webp"
     try:
         with Image.open(filepath) as im:
             n_frames = getattr(im, "n_frames", 1)
+            
             if n_frames > 1:
                 return True
-            else:
-                return False
+            
+        # Single-frame WebP: check if it's trapped in an animation container
+        if sanitize_single_frame and has_webp_anim_container(filepath):
+            logger.info("Sanitizing single frame animated WebP to pure static WebP: %s", filepath)
+            with Image.open(filepath) as im:
+                im.save(temp_path, "WEBP")
+            os.replace(temp_path, filepath)
+            
+        return False
+
     except Exception as e:
         logger.warning("Could not check animation status of %s: %s", filepath, e)
         return False
+    finally:
+        if os.path.exists(temp_path):
+            try:
+                os.remove(temp_path)
+            except Exception:
+                pass
+
 
 
 async def wrap_static_as_animated(filepath: str, output_path: Optional[str] = None) -> bool:
