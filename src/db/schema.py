@@ -266,6 +266,7 @@ async def init_db():
                         request_count INTEGER DEFAULT 1,
                         last_conversion_duration REAL,
                         cache_score REAL DEFAULT 0.0,
+                        first_seen TIMESTAMP WITH TIME ZONE NOT NULL,
                         last_updated TIMESTAMP WITH TIME ZONE NOT NULL
                     )
                 """)
@@ -396,6 +397,7 @@ async def init_db():
                 await conn.execute("""
                     CREATE INDEX IF NOT EXISTS idx_sticker_set_details_popularity 
                     ON sticker_set_details (user_count DESC, request_count DESC) 
+                    ON sticker_set_details (user_count DESC, first_seen DESC) 
                     WHERE short_name IS NOT NULL
                 """)
 

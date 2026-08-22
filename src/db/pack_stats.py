@@ -35,9 +35,10 @@ async def add_or_update_sticker_set_details(
                 await conn.execute("""
                     INSERT INTO sticker_set_details (
                         set_id, short_name, is_emoji, pack_title, sticker_count,
-                        user_count, request_count, last_conversion_duration, cache_score, last_updated
+                        user_count, request_count, last_conversion_duration, cache_score,
+                        first_seen, last_updated
                     )
-                    VALUES ($1, $2, $3, $4, $5, 0, 0, $6, $7, $8)
+                    VALUES ($1, $2, $3, $4, $5, 0, 0, $6, $7, $8, $8)
                     ON CONFLICT (set_id) DO UPDATE SET
                         pack_title = EXCLUDED.pack_title,
                         short_name = EXCLUDED.short_name,
@@ -95,6 +96,9 @@ async def add_or_update_sticker_set_details(
                 # some other error
                 raise e
 
+# Backwards-compatible alias
+add_or_update_sticker_set_stats = add_or_update_sticker_set_details
+
 async def get_set_id_by_short_name(short_name: str) -> Optional[int]:
     """Finds a sticker set's ID by its short name in sticker_set_details."""
     pool = get_pool()
@@ -143,7 +147,7 @@ async def calculate_and_store_popular_packs():
             SELECT pack_title, short_name, is_emoji 
             FROM sticker_set_details 
             WHERE short_name IS NOT NULL 
-            ORDER BY user_count DESC, request_count DESC 
+            ORDER BY user_count DESC, first_seen DESC 
             LIMIT 50;
         """)
         
