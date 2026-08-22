@@ -256,18 +256,33 @@ async def init_db():
                 
                 # sticker set stats 
                 await conn.execute("""
-                    CREATE TABLE IF NOT EXISTS sticker_set_stats (
+                    CREATE TABLE IF NOT EXISTS sticker_set_details (
                         set_id BIGINT PRIMARY KEY,
                         short_name TEXT UNIQUE,
                         is_emoji BOOLEAN NOT NULL,
                         pack_title TEXT,
                         sticker_count INTEGER,
+                        user_count INTEGER DEFAULT 1,
                         request_count INTEGER DEFAULT 1,
                         last_conversion_duration REAL,
                         cache_score REAL DEFAULT 0.0,
                         last_updated TIMESTAMP WITH TIME ZONE NOT NULL
                     )
                 """)
+
+                await conn.execute("""
+                    CREATE TABLE IF NOT EXISTS sticker_set_users (
+                        set_id BIGINT NOT NULL,
+                        user_id BIGINT NOT NULL,
+                        first_used_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+                        PRIMARY KEY (set_id, user_id),
+                        FOREIGN KEY (set_id) REFERENCES sticker_set_details (set_id) ON DELETE CASCADE,
+                        FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE
+                    )
+                """)
+
+                
+
 
                 # For tracking which packs are currently cached
                 await conn.execute("""
@@ -277,7 +292,7 @@ async def init_db():
                         cached_at TIMESTAMP WITH TIME ZONE NOT NULL,
                         channel_id BIGINT NOT NULL,
                         message_ids JSONB NOT NULL,
-                        FOREIGN KEY (set_id) REFERENCES sticker_set_stats (set_id) ON DELETE CASCADE
+                        FOREIGN KEY (set_id) REFERENCES sticker_set_details (set_id) ON DELETE CASCADE
                     )
                 """)
 
@@ -357,7 +372,7 @@ async def init_db():
                 """)
                 # Speeds up /refreshcache by quickly sorting all packs
                 await conn.execute("""
-                    CREATE INDEX IF NOT EXISTS idx_sticker_set_stats_cache_score ON sticker_set_stats (cache_score)
+                    CREATE INDEX IF NOT EXISTS idx_sticker_set_details_cache_score ON sticker_set_details (cache_score)
                 """)
                 # Speeds up the daily stats calculation for /gstats (this is must as the conversion_log will get damn large)
                 await conn.execute("""
@@ -371,13 +386,17 @@ async def init_db():
                 await conn.execute("""
                     CREATE INDEX IF NOT EXISTS idx_user_stats_total_requests ON user_stats (total_requests)
                 """)
-                # Speeds up the daily popular packs calculation
+                # Speeds up daily unique user calculation from conversion_log
                 await conn.execute("""
-                    CREATE INDEX IF NOT EXISTS idx_conversion_log_set_id ON conversion_log (set_id)
+                    CREATE INDEX IF NOT EXISTS idx_conversion_log_daily_popularity 
+                    ON conversion_log (request_time, set_id, user_id) 
+                    WHERE status LIKE 'completed%'
                 """)
-                # Speeds up fetching top users and all-time popular packs
+                # Speeds up all-time popular packs retrieval
                 await conn.execute("""
-                    CREATE INDEX IF NOT EXISTS idx_sticker_set_stats_request_count ON sticker_set_stats (request_count)
+                    CREATE INDEX IF NOT EXISTS idx_sticker_set_details_popularity 
+                    ON sticker_set_details (user_count DESC, request_count DESC) 
+                    WHERE short_name IS NOT NULL
                 """)
 
                 # Index for fetching the next available queue item fast

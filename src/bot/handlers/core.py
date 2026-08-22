@@ -351,7 +351,7 @@ class BotHandlers:
         if cache_status == 'hit':
             # Verify the cached files actually exist
             if None not in await self.ctx.client.get_messages(channel_id, ids=message_ids):
-                await db.record_cache_hit(set_id)
+                await db.record_cache_hit(set_id, user_id=user_id)
                 logger.info(f"✅ Cache hit for pack {set_id} in channel {channel_id}. Forwarding to user {user_id}.")
                 num_packs = len(message_ids)
                 
@@ -737,14 +737,15 @@ class BotHandlers:
 
 
         # update the stats with duration
-        new_cache_score = await db.add_or_update_sticker_set_stats(
+        new_cache_score = await db.add_or_update_sticker_set_details(
             set_id=sticker_set.set.id,
             short_name=pack_short_name,
             is_emoji=is_emoji_pack,
             pack_title=pack_title,
             sticker_count=total_stickers,
             conversion_duration=conversion_duration,
-            is_system_process=is_silent_mode
+            is_system_process=is_silent_mode,
+            user_id=item.user_id if not is_silent_mode else None
         )
 
         # ------------UPLOAD -------------

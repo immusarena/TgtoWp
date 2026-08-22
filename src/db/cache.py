@@ -5,7 +5,7 @@ from typing import Optional, List, Tuple
 from src.utils.time import utcnow
 from src.core.config import CACHE_CHANNEL_IDS, MAX_FILES_PER_CACHE_CHANNEL
 from src.db.pool import get_pool
-from src.db.pack_stats import add_or_update_sticker_set_stats
+from src.db.pack_stats import add_or_update_sticker_set_details
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +60,7 @@ async def is_pack_cached(set_id: int, current_title: str, current_sticker_count:
         channel_id = cache_result['channel_id']
         message_ids = json.loads(cache_result['message_ids'])
 
-        stats_result = await conn.fetchrow("SELECT pack_title, sticker_count FROM sticker_set_stats WHERE set_id = $1", set_id,)
+        stats_result = await conn.fetchrow("SELECT pack_title, sticker_count FROM sticker_set_details WHERE set_id = $1", set_id,)
 
         if not stats_result or \
            stats_result['pack_title'] != current_title or \
@@ -71,22 +71,23 @@ async def is_pack_cached(set_id: int, current_title: str, current_sticker_count:
     logger.info(f"Cache hit for pack {set_id} in channel {channel_id}.")
     return 'hit', channel_id, message_ids
 
-async def record_cache_hit(set_id: int, is_system_process: bool = False):
+async def record_cache_hit(set_id: int, is_system_process: bool = False, user_id: Optional[int] = None):
     """Updates a pack's stats to reflect a cache hit, increasing its score."""
     pool = get_pool()
     pack_info = await pool.fetchrow(
-        "SELECT short_name, is_emoji, pack_title, sticker_count, last_conversion_duration FROM sticker_set_stats WHERE set_id = $1",
+        "SELECT short_name, is_emoji, pack_title, sticker_count, last_conversion_duration FROM sticker_set_details WHERE set_id = $1",
         set_id
     )
     if pack_info:
-        await add_or_update_sticker_set_stats(
+        await add_or_update_sticker_set_details(
             set_id=set_id,
             short_name=pack_info['short_name'],
             is_emoji=pack_info['is_emoji'],
             pack_title=pack_info['pack_title'],
             sticker_count=pack_info['sticker_count'],
             conversion_duration=pack_info['last_conversion_duration'],
-            is_system_process=is_system_process
+            is_system_process=is_system_process,
+            user_id=user_id
         )
 
 async def add_to_cache(set_id: int, cache_score: float, channel_id: int, message_ids: List[int]):
@@ -178,7 +179,7 @@ async def get_all_cached_pack_ids() -> List[int]:
 async def get_all_known_pack_short_names() -> List[str]:
     """Gets a list of short names of all currently known packs."""
     pool = get_pool()
-    results = await pool.fetch("SELECT short_name FROM sticker_set_stats WHERE short_name IS NOT NULL")
+    results = await pool.fetch("SELECT short_name FROM sticker_set_details WHERE short_name IS NOT NULL")
     return [result['short_name'] for result in results]
 
 
@@ -186,24 +187,24 @@ async def get_top_packs_by_score(limit: int) -> List[str]:
     """Gets the top N sticker packs ordered by their cache score, returns a list of shortname strings"""
     pool = get_pool()
     rows = await pool.fetch(
-            "SELECT short_name FROM sticker_set_stats WHERE short_name IS NOT NULL ORDER BY cache_score DESC LIMIT $1",
+            "SELECT short_name FROM sticker_set_details WHERE short_name IS NOT NULL ORDER BY cache_score DESC LIMIT $1",
             limit)
     return [row['short_name'] for row in rows]
 
 
 async def get_non_cached_packs(limit: Optional[int] = None) -> List[str]:
     """
-    Gets a list of pack short_names from sticker_set_stats that are not in the cached_packs table.
+    Gets a list of pack short_names from sticker_set_details that are not in the cached_packs table.
     Results are ordered by cache_score descending to prioritize popular packs.
     """ 
     pool = get_pool()
-    # find the entries in the sticker_set_stats that are not in cached_packs (on the basis of set_id)
+    # find the entries in the sticker_set_details that are not in cached_packs (on the basis of set_id)
     query = """
-        SELECT sss.short_name
-        FROM sticker_set_stats sss
-        LEFT JOIN cached_packs cp ON sss.set_id = cp.set_id
-        WHERE cp.set_id IS NULL AND sss.short_name IS NOT NULL
-        ORDER BY sss.cache_score DESC
+        SELECT ssd.short_name
+        FROM sticker_set_details ssd
+        LEFT JOIN cached_packs cp ON ssd.set_id = cp.set_id
+        WHERE cp.set_id IS NULL AND ssd.short_name IS NOT NULL
+        ORDER BY ssd.cache_score DESC
     """
     rows = []
     if limit and isinstance(limit, int) and limit > 0:
