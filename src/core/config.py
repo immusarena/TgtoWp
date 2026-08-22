@@ -60,6 +60,7 @@ LOG_DIR = "storage/logs" # for /getlogs command and log backups
 
 # ------ Cache settings ----------
 CACHE_ENABLED = True # To use cache or not, owner can change it using the bot too but on bot restarts it will change to this default value
+COUNT_CACHE_HITS_AS_REQUESTS = True # If True cache hits count towards user's daily conversion quota
 CACHE_SCORE_TIME_WEIGHT = 1.5   # Weight for conversion duration (in seconds)
 CACHE_SCORE_REQUEST_WEIGHT = 1 # Weight for the number of times a pack is requested
 MAX_FILES_PER_CACHE_CHANNEL = 95000

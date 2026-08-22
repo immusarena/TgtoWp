@@ -359,7 +359,8 @@ class BotHandlers:
                 is_emoji_pack = sticker_set_info['is_emoji']
                 pack_type_url = "addemoji" if is_emoji_pack else "addstickers"
                 pack_url = f"https://t.me/{pack_type_url}/{sticker_set_info['short_name']}"
-                if log_id is None:
+                is_direct_cache_hit = (log_id is None)
+                if is_direct_cache_hit:
                     log_id = await db.log_conversion_request(user_id, set_id, pack_url, is_emoji_pack)
                 
                 await self.ctx.client.send_message(chat_id, f"<tg-emoji emoji-id='5456140674028019486'>⚡️</tg-emoji> Found this pack in the cache! Sending <b>{num_packs}</b> {'file' if num_packs == 1 else 'files'} instantly...", reply_to=msg_to_reply_id, parse_mode="html")
@@ -372,11 +373,15 @@ class BotHandlers:
                     logger.info(f"✅ Successfully forwarded pack {set_id} from cache to user {user_id}.")
                     await self.ctx.client.send_message(chat_id, "<tg-emoji emoji-id='5872922883092648417'>📱</tg-emoji> To import to WhatsApp, use '<b>Sticker Maker</b>' app on your phone (/help for more info). Enjoy!", parse_mode="html")
                     await db.update_conversion_log(log_id, "completed_from_cache", datetime.now(timezone.utc), 0.0)
+                    if COUNT_CACHE_HITS_AS_REQUESTS and is_direct_cache_hit:
+                        await db.increment_daily_requests(user_id)
                     return True
                 except UserIsBlockedError:
                     # some dumbass block the bot even when it is sending files
                     logger.error(f"User has blocked the bot! Failed to forward cached messages for pack {set_id} to user {user_id}.")
                     await db.update_conversion_log(log_id, "completed_from_cache_but_blocked", datetime.now(timezone.utc), 0.0)
+                    if COUNT_CACHE_HITS_AS_REQUESTS and is_direct_cache_hit:
+                        await db.increment_daily_requests(user_id)
                     return True
                 # if all successful upload
                 except Exception as e:
