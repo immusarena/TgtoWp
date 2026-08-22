@@ -396,7 +396,6 @@ async def init_db():
                 # Speeds up all-time popular packs retrieval
                 await conn.execute("""
                     CREATE INDEX IF NOT EXISTS idx_sticker_set_details_popularity 
-                    ON sticker_set_details (user_count DESC, request_count DESC) 
                     ON sticker_set_details (user_count DESC, first_seen DESC) 
                     WHERE short_name IS NOT NULL
                 """)
