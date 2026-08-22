@@ -48,6 +48,7 @@ class BackupManager:
                 '-d', DB_NAME,
                 '-f', dump_path,
                 '--no-owner',
+                '--if-exists',
                 '--clean',
                 env=env,
                 stdout=asyncio.subprocess.PIPE,

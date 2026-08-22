@@ -289,6 +289,8 @@ class OwnerCommands:
                 '-d', DB_NAME,
                 '-f', dump_path,
                 '--clean',
+                '--if-exists',
+                '--no-owner',
                 env=env,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE
