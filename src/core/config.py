@@ -73,10 +73,18 @@ SUPPORT_GROUP = os.getenv("SUPPORT_GROUP")
 SUPPORT_GROUP_LINK = SUPPORT_GROUP if SUPPORT_GROUP.startswith(('https://t.me/', 'http://t.me/', 'https://telegram.me/', 'http://telegram.me/', 't.me/')) else f"https://t.me/{SUPPORT_GROUP.lstrip("@")}"
 # should be in format like ("Name", "@username", -12345675678) or ("Name", "link", -1212324141)
 REQUIRED_CHANNELS = json.loads(os.getenv("REQUIRED_CHANNELS_JSON"))
+
+def _normalize_link(l: str) -> str:
+    l = l.strip()
+    if l.startswith(('https://', 'http://', 'tg://')):
+        return l
+    if l.startswith(('t.me/', 'telegram.me/')):
+        return f"https://{l}"
+    return f"https://t.me/{l.lstrip('@')}"
 # formatting properly for use
 try:
     REQUIRED_CHANNELS_FORMATTED = [
-        (type_str, name, link, id) if link.startswith(('https://t.me/', 'http://t.me/', 'https://telegram.me/', 'http://telegram.me/', 't.me/')) else (type_str, name, f"https://t.me/{link.lstrip("@")}", id) for (type_str, name, link, id) in REQUIRED_CHANNELS
+        (type_str, name, _normalize_link(link), id) for (type_str, name, link, id) in REQUIRED_CHANNELS
     ]
 except Exception as e:
     print(f"Error parsing REQUIRED_CHANNELS_JSON please re-run the env setup script. Error: {e}")
@@ -179,6 +187,7 @@ ICON_DIMENSIONS = (96, 96)
 
 
 #================ Messages ===============
+_safe_clickable_str = _channel_clickable_str.replace('{', '{{').replace('}', '}}')
 
 START_MESSAGE_FORMAT = (
 f"""<tg-emoji emoji-id="5472427507842032538">🎉</tg-emoji> <b>Welcome to <a href='https://t.me/{{bot_username}}'>{{bot_name}}</a></b>
@@ -191,9 +200,9 @@ I can convert any <b>Telegram sticker or emoji pack</b> directly into <b>WhatsAp
 
 For a full guide on features and how to import the stickers to WhatsApp, please use the /help command.""" 
 + 
-(f"\n\n<tg-emoji emoji-id='5447644880824181073'>⚠️</tg-emoji> <b>Note:</b> You must be a member of {_channel_clickable_str} to use this bot" if channel_len == 1 else
+(f"\n\n<tg-emoji emoji-id='5447644880824181073'>⚠️</tg-emoji> <b>Note:</b> You must be a member of {_safe_clickable_str} to use this bot" if channel_len == 1 else
 f"""\n\n<tg-emoji emoji-id="5447644880824181073">⚠️</tg-emoji> <b>Note:</b> You must be a member of following {chat_types} to use this bot:
-{_channel_clickable_str}""" if channel_len > 1 else "")
+{_safe_clickable_str}""" if channel_len > 1 else "")
 )
 
 HELP_MESSAGE = f"""
