@@ -195,9 +195,9 @@ class HelperMethods:
             # iterate through the list of tuples ("Name", "link")
             for element in REQUIRED_CHANNELS_FORMATTED:
                 # only valid format lenths are allowed
-                if len(element)==3:
-                    name = element[0]
-                    id = element[2]
+                if len(element)==4:
+                    name = element[1]
+                    id = element[3]
                 else:
                     continue
 

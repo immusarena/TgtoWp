@@ -133,15 +133,20 @@ with open('.env', 'w') as f:
     channels = []
     while True:
         print()
-        name = get_input("Channel/Group Name (or press Enter)", allow_empty=True)
-        if name == '':
+        type_num = get_input("Is this a channel or a group? [1/2/3]\n1 = Channel, 2 = Group, 3 = Exit", default="3")
+        if type_num not in ['1', '2', '3']:
+            print(f"{Colors.FG_RED}Invalid input. Please enter 1 for channel, 2 for group, or 3 to exit.{Colors.RESET}")
+            continue
+        if type_num == '3':
             break
+        type_str = "Channel" if type_num == '1' else "Group"
+        name = get_input(f"{type_str} Name")
         link = get_input(f"Link/Username for '{name}'")
         
         while True:
             try:
-                channel_id = get_input(f"Channel ID for '{name}'")
-                channels.append((name, link, int(channel_id)))
+                channel_id = get_input(f"{type_str} ID for '{name}'")
+                channels.append((type_str.lower(), name, link, int(channel_id)))
                 break
             except ValueError:
                 print(f"{Colors.FG_RED}Invalid ID. It must be a number. Please try again.{Colors.RESET}")

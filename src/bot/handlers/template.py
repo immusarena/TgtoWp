@@ -131,12 +131,12 @@ class TemplateHelper:
             row = []
 
             # First Button in Row
-            name1, link1 = REQUIRED_CHANNELS_FORMATTED[i][:2]
+            name1, link1 = REQUIRED_CHANNELS_FORMATTED[i][1:3]
             row.append(Button.url(f"{name1}", url=link1, style="primary", icon=None))
 
             # Second Button in Row (if it exists)
             if i + 1 < len(REQUIRED_CHANNELS_FORMATTED):
-                name2, link2 = REQUIRED_CHANNELS_FORMATTED[i+1][:2]
+                name2, link2 = REQUIRED_CHANNELS_FORMATTED[i+1][1:3]
                 row.append(Button.url(f"{name2}", url=link2, style="primary", icon=None))
             
             keyboard.append(row)

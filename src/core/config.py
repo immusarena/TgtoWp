@@ -74,12 +74,26 @@ SUPPORT_GROUP_LINK = SUPPORT_GROUP if SUPPORT_GROUP.startswith(('https://t.me/',
 # should be in format like ("Name", "@username", -12345675678) or ("Name", "link", -1212324141)
 REQUIRED_CHANNELS = json.loads(os.getenv("REQUIRED_CHANNELS_JSON"))
 # formatting properly for use
-REQUIRED_CHANNELS_FORMATTED = [
-    (name, link, id) if link.startswith(('https://t.me/', 'http://t.me/', 'https://telegram.me/', 'http://telegram.me/', 't.me/')) else (name, f"https://t.me/{link.lstrip("@")}", id) for (name, link, id) in REQUIRED_CHANNELS
-]
+try:
+    REQUIRED_CHANNELS_FORMATTED = [
+        (type_str, name, link, id) if link.startswith(('https://t.me/', 'http://t.me/', 'https://telegram.me/', 'http://telegram.me/', 't.me/')) else (type_str, name, f"https://t.me/{link.lstrip("@")}", id) for (type_str, name, link, id) in REQUIRED_CHANNELS
+    ]
+except Exception as e:
+    print(f"Error parsing REQUIRED_CHANNELS_JSON please re-run the env setup script. Error: {e}")
+    exit(1)
 
-# Channel list converted to string 
-_channel_list_str = "\n".join([f"• <b><a href=\"{channel[1]}\">{html.escape(channel[0])}</a></b>" for channel in REQUIRED_CHANNELS_FORMATTED])
+channel_len = len(REQUIRED_CHANNELS_FORMATTED)
+chat_types = ''
+_channel_clickable_str = ''
+if channel_len == 1:
+    chat_types = 'channel' if REQUIRED_CHANNELS_FORMATTED[0][0] == 'channel' else 'group'
+    # single channel clickable string
+    _channel_clickable_str = f"<b><a href='{REQUIRED_CHANNELS_FORMATTED[0][2]}'>{html.escape(REQUIRED_CHANNELS_FORMATTED[0][1])}</a></b>"
+elif channel_len > 1:
+    chat_types = 'channels' if all(channel[0] == 'channel' for channel in REQUIRED_CHANNELS_FORMATTED) else 'groups' if all(channel[0] == 'group' for channel in REQUIRED_CHANNELS_FORMATTED) else 'channels/groups'
+    # Channel list converted to string 
+    _channel_clickable_str = "\n".join([f"• <b><a href=\"{channel[2]}\">{html.escape(channel[1])}</a></b>" for channel in REQUIRED_CHANNELS_FORMATTED])
+
 
 
 # ------- Notification Settings --------
@@ -177,8 +191,9 @@ I can convert any <b>Telegram sticker or emoji pack</b> directly into <b>WhatsAp
 
 For a full guide on features and how to import the stickers to WhatsApp, please use the /help command.""" 
 + 
-(f"""\n\n<tg-emoji emoji-id="5447644880824181073">⚠️</tg-emoji> <b>Note:</b> You must be a member of following channels/groups to use this bot:
-{_channel_list_str}""" if REQUIRED_CHANNELS else "")
+(f"\n\n<tg-emoji emoji-id='5447644880824181073'>⚠️</tg-emoji> <b>Note:</b> You must be a member of {_channel_clickable_str} to use this bot" if channel_len == 1 else
+f"""\n\n<tg-emoji emoji-id="5447644880824181073">⚠️</tg-emoji> <b>Note:</b> You must be a member of following {chat_types} to use this bot:
+{_channel_clickable_str}""" if channel_len > 1 else "")
 )
 
 HELP_MESSAGE = f"""
@@ -235,14 +250,19 @@ If you run into any issues or have questions, please join our support group for 
 
 QUEUE_CHECK_MESSAGE = "<tg-emoji emoji-id='5258513401784573443'>📊</tg-emoji> <b>Queue Status</b>\n\nYour position: {position}\nTotal in queue: {total}"
 
-CHANNEL_JOIN_MESSAGE = f"""
-<tg-emoji emoji-id="5843952899184398024">❌</tg-emoji> <b>Access Denied!</b>
+CHANNEL_JOIN_MESSAGE = (
+f"""<tg-emoji emoji-id="5843952899184398024">❌</tg-emoji> <b>Access Denied!</b>
 
-To use this bot, you must join these channels/groups first:
-{_channel_list_str}
+To use this bot, you must join {_channel_clickable_str} first.
 
-After joining try again!
-"""
+After joining try again!""" if channel_len == 1 else
+
+f"""<tg-emoji emoji-id="5843952899184398024">❌</tg-emoji> <b>Access Denied!</b>
+
+To use this bot, you must join these {chat_types} first:
+{_channel_clickable_str}
+
+After joining try again!""" if channel_len > 1 else "")
 
 COMMANDS_MESSAGE = """
 <tg-emoji emoji-id="5258093637450866522">🤖</tg-emoji> <b>Here are the commands you can use:</b>
