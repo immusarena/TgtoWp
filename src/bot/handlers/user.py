@@ -163,14 +163,10 @@ class UserCommands:
         await event.reply(message, buttons=buttons, parse_mode='html', link_preview=False)
         raise StopPropagation
 
-    @check_banned
-    @update_user_info
-    async def contact_command(self, event: events.NewMessage.Event):
-        """Handles the /contact command, prompting the user to send a message."""
-        user = await event.get_sender()
-
+    async def show_contact_prompt(self, event: events.CallbackQuery.Event | events.NewMessage.Event, user_id: int, mode: str):
+        """Shows the contact prompt to the user."""
         session = await session_manager.create(
-            user_id=user.id,
+            user_id=user_id,
             flow=Flow.CONTACT,
             state="awaiting_confirmation",
             ttl_seconds=3600, # Session expires in 1 hour
@@ -182,8 +178,19 @@ class UserCommands:
             Button.inline("Cancel", f"contact_cancel_{session.session_id}", style="danger", icon=5465665476971471368)],
             [Button.url("Support Group", SUPPORT_GROUP_LINK, style="primary", icon=5443038326535759644)]
         ]
-        await event.reply(CONTACT_PROMPT_MESSAGE, buttons=buttons, link_preview=False, parse_mode='html')
+        if mode == "callback":
+            await event.edit(CONTACT_PROMPT_MESSAGE, buttons=buttons, link_preview=False, parse_mode='html')
+        else:
+            await event.reply(CONTACT_PROMPT_MESSAGE, buttons=buttons, link_preview=False, parse_mode='html')
         raise StopPropagation
+
+    @check_banned
+    @update_user_info
+    async def contact_command(self, event: events.NewMessage.Event):
+        """Handles the /contact command, prompting the user to send a message."""
+        user = await event.get_sender()
+
+        await self.show_contact_prompt(event, user.id, mode="message")
 
     @check_banned
     @update_user_info

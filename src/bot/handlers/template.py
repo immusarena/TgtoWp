@@ -143,3 +143,10 @@ class TemplateHelper:
         
         keyboard.append([Button.inline("Check Again", b"check_membership", style="success", icon=5258200019495821936)])
         return keyboard
+
+    def create_post_conversion_buttons(self) -> list:
+        """Creates buttons for contacting support."""
+        return [
+            [Button.inline("How to Import?", b"help_import", style = None, icon=5818947586702184246)], 
+            [Button.inline("Report an Issue", b"contact", style = None, icon=5895457880710058528)]
+        ]

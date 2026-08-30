@@ -372,7 +372,7 @@ class BotHandlers:
 
                     logger.info(f"✅ Successfully forwarded pack {set_id} from cache to user {user_id}.")
                     await self.ctx.client.send_message(chat_id, AFTER_SUCCESSFUL_CONVERSION_MESSAGE,
-                                                        buttons= [[Button.inline("How to Import?", b"help_import", style = None, icon=5818947586702184246)]],
+                                                        buttons= self.templates.create_post_conversion_buttons(),
                                                         link_preview=False, parse_mode="html")
                     await db.update_conversion_log(log_id, "completed_from_cache", datetime.now(timezone.utc), 0.0)
                     if COUNT_CACHE_HITS_AS_REQUESTS and is_direct_cache_hit:
@@ -840,7 +840,7 @@ class BotHandlers:
                         await self.ctx.client.send_message(entity=item.chat_id, message=message, link_preview=False)
 
                     await self.ctx.client.send_message(item.chat_id, AFTER_SUCCESSFUL_CONVERSION_MESSAGE,
-                                                        buttons= [[Button.inline("How to Import?", b"help_import", style = None, icon=5818947586702184246)]],
+                                                        buttons= self.templates.create_post_conversion_buttons(),
                                                         link_preview=False, parse_mode="html")
                     status_for_db = "completed"
                 except UserIsBlockedError:
@@ -915,7 +915,7 @@ class BotHandlers:
                 # If all uploads were successful
                 if all_uploads_succeeded:
                     await self.ctx.client.send_message(item.chat_id, AFTER_SUCCESSFUL_CONVERSION_MESSAGE,
-                                                        buttons= [[Button.inline("How to Import?", b"help_import", style = None, icon=5818947586702184246)]],
+                                                        buttons= self.templates.create_post_conversion_buttons(),
                                                         link_preview=False, parse_mode="html")
                     
         return status_for_db
@@ -1388,7 +1388,7 @@ class BotHandlers:
 
             elif data == "post_conv":
                 await event.answer()
-                buttons= [[Button.inline("How to Import?", b"help_import", style = None, icon=5818947586702184246)]]
+                buttons= self.templates.create_post_conversion_buttons()
                 await event.edit(AFTER_SUCCESSFUL_CONVERSION_MESSAGE, buttons=buttons, link_preview=False, parse_mode='html')
 
             elif data == "start":
@@ -1439,6 +1439,10 @@ class BotHandlers:
                     [Button.inline("Back to Start", b"start", style = "primary", icon=5258236805890710909), Button.inline("Help", b"help", style = "success", icon=5818947586702184246)]
                 ]
                 await event.edit(COMMANDS_MESSAGE, buttons=buttons, parse_mode='html')
+
+            elif data == "contact":
+                await event.answer()
+                await self.ctx.user.show_contact_prompt(event, user_id, mode="callback")
 
             elif data == "contact_cancel_reply":
                 await event.edit("<tg-emoji emoji-id='5336985409220001678'>✅</tg-emoji> Action cancelled. The reply was not sent.", parse_mode="html")

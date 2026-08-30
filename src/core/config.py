@@ -432,4 +432,4 @@ AFTER_SUCCESSFUL_CONVERSION_MESSAGE = """<tg-emoji emoji-id='5386506901833921374
 <tg-emoji emoji-id='5386533208508609398'>🔗</tg-emoji> <b>Play Store</b>: <b><a href='https://play.google.com/store/apps/details?id=com.marsvard.stickermakerforwhatsapp'>Click here</a></b>
 <tg-emoji emoji-id='5384144180194848649'>🔗</tg-emoji> <b>App Store</b>: <b><a href='https://apps.apple.com/us/app/sticker-maker-studio/id1443326857'>Click here</a></b>
 
-Click the button below for detailed steps. Enjoy!"""
+Use the buttons below for detailed steps or to report any issues you encounter. Enjoy :)"""
