@@ -69,11 +69,6 @@ CACHE_CHANNEL_IDS = [int(channel_id) for channel_id in cache_ids_str.split(',') 
 
 # ------ support group and required channels/groups ----------
 # Support group for bot related queries (will be used in help message)
-SUPPORT_GROUP = os.getenv("SUPPORT_GROUP")
-SUPPORT_GROUP_LINK = SUPPORT_GROUP if SUPPORT_GROUP.startswith(('https://t.me/', 'http://t.me/', 'https://telegram.me/', 'http://telegram.me/', 't.me/')) else f"https://t.me/{SUPPORT_GROUP.lstrip("@")}"
-# should be in format like ("Name", "@username", -12345675678) or ("Name", "link", -1212324141)
-REQUIRED_CHANNELS = json.loads(os.getenv("REQUIRED_CHANNELS_JSON"))
-
 def _normalize_link(l: str) -> str:
     l = l.strip()
     if l.startswith(('https://', 'http://', 'tg://')):
@@ -81,6 +76,11 @@ def _normalize_link(l: str) -> str:
     if l.startswith(('t.me/', 'telegram.me/')):
         return f"https://{l}"
     return f"https://t.me/{l.lstrip('@')}"
+SUPPORT_GROUP = os.getenv("SUPPORT_GROUP")
+SUPPORT_GROUP_LINK = _normalize_link(SUPPORT_GROUP)
+# should be in format like ("Name", "@username", -12345675678) or ("Name", "link", -1212324141)
+REQUIRED_CHANNELS = json.loads(os.getenv("REQUIRED_CHANNELS_JSON"))
+
 # formatting properly for use
 try:
     REQUIRED_CHANNELS_FORMATTED = [
