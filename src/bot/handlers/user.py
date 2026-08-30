@@ -5,7 +5,7 @@ from telethon.tl.types import MessageEntityCustomEmoji
 
 from src import db
 from src.core.config import *
-from src.bot.handlers.helper import check_banned, update_user_info
+from src.bot.handlers.helper import check_banned, update_user_info, send_rich_message
 from src.bot.handlers.context import BotContext
 from src.services.queue.manager import queue_manager
 from src.services.sessions.manager import Flow, session_manager
@@ -60,7 +60,7 @@ class UserCommands:
                 [Button.url("Get Started", deep_link, style="primary", icon=5793933761594789855)]
             ]
 
-        await event.reply(HELP_MESSAGE, buttons=buttons, link_preview=False, parse_mode='html')
+        await send_rich_message(self.ctx.client, event.chat_id, HELP_MESSAGE_RICH, HELP_MESSAGE_FALLBACK, buttons=buttons, reply_to=event.id, link_preview=False)
         raise StopPropagation
 
     @check_banned

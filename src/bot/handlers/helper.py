@@ -5,7 +5,7 @@ import asyncio
 import logging
 from functools import wraps
 from typing import List, Optional, Sequence, Any
-from telethon import Button, events
+from telethon import Button, TelegramClient, events, functions, types
 from telethon.events import StopPropagation
 from telethon.errors import ChatAdminRequiredError
 from telethon.tl.functions.channels import GetParticipantRequest
@@ -393,3 +393,40 @@ def update_user_info(func):
     return wrapper
 
 
+
+async def send_rich_message(client: TelegramClient, peer, html_content: str, fallback_text: str = "", buttons=None, reply_to=None, link_preview: Optional[bool] = None):
+    """Sends a native Telegram Rich Message using raw HTML."""
+    peer_entity = await client.get_input_entity(peer)
+    reply_markup = client.build_reply_markup(buttons) if buttons is not None else None
+    input_reply = types.InputReplyToMessage(reply_to) if isinstance(reply_to, int) else reply_to
+
+    request = functions.messages.SendMessageRequest(
+        peer=peer_entity,
+        message=fallback_text or "Rich Message",
+        rich_message=types.InputRichMessageHTML(
+            html=html_content
+        ),
+        reply_markup=reply_markup,
+        reply_to=input_reply,
+        no_webpage=not link_preview if link_preview is not None else None
+    )
+    result = await client(request)
+    return client._get_response_message(request, result, peer_entity) or result
+
+async def edit_rich_message(client: TelegramClient, peer, msg_id: int, html_content: str, fallback_text: str = "", buttons=None, link_preview: Optional[bool] = None):
+    """Edits an existing message with updated Rich Message HTML."""
+    peer_entity = await client.get_input_entity(peer)
+    reply_markup = client.build_reply_markup(buttons) if buttons is not None else None
+
+    request = functions.messages.EditMessageRequest(
+        peer=peer_entity,
+        id=msg_id,
+        message=fallback_text or "Rich Message",
+        rich_message=types.InputRichMessageHTML(
+            html=html_content
+        ),
+        reply_markup=reply_markup,
+        no_webpage=not link_preview if link_preview is not None else None
+    )
+    result = await client(request)
+    return client._get_response_message(request, result, peer_entity) or result

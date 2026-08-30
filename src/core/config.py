@@ -205,7 +205,7 @@ f"""\n\n<tg-emoji emoji-id="5447644880824181073">⚠️</tg-emoji> <b>Note:</b> 
 {_safe_clickable_str}""" if channel_len > 1 else "")
 )
 
-HELP_MESSAGE = f"""
+HELP_MESSAGE_FALLBACK = f"""
 <tg-emoji emoji-id="5388953246486269495">📖</tg-emoji> <b>Help Guide</b>
 
 <tg-emoji emoji-id="5785045099142450328">🤔</tg-emoji> <b>How to Convert a Pack?</b>
@@ -220,8 +220,8 @@ You have two simple options:
 1. <tg-emoji emoji-id="5256186019136421048">📱</tg-emoji> <b>Install the App</b>: 
 <blockquote>You'll need a helper app. We recommend <b>Sticker Maker</b>.
 
-<tg-emoji emoji-id="5373130604147654226">🔗</tg-emoji> <b>Google Play Link</b>: <b><a href="https://play.google.com/store/apps/details?id=com.marsvard.stickermakerforwhatsapp">Click here</a></b>
-<tg-emoji emoji-id="6271815741620621587">🔗</tg-emoji> <b>App Store Link</b>: <b><a href="https://apps.apple.com/us/app/sticker-maker-studio/id1443326857">Click here</a></b>
+<tg-emoji emoji-id="5386533208508609398">🔗</tg-emoji> <b>Play Store</b>: <b><a href="https://play.google.com/store/apps/details?id=com.marsvard.stickermakerforwhatsapp">Click here</a></b>
+<tg-emoji emoji-id="5384144180194848649">🔗</tg-emoji> <b>App Store</b>: <b><a href="https://apps.apple.com/us/app/sticker-maker-studio/id1443326857">Click here</a></b>
 </blockquote>
 2.  <tg-emoji emoji-id="5258134813302332906">📂</tg-emoji> <b>Open the File</b>: 
 <blockquote>Once I send you the <code>.wastickers</code> file, tap on it here in Telegram.
@@ -233,7 +233,7 @@ That's it, your stickers are ready!
 
 ---
 
-<tg-emoji emoji-id="5296739894914207637">✨</tg-emoji> <b>Explore More Features</b>
+<tg-emoji emoji-id="5418077986656112171">✨</tg-emoji> <b>Explore More Features</b>
 <blockquote>• Use /commands to see a full list of all available commands.
 • Use /premium to check your premium status and learn about the benefits.</blockquote>
 
@@ -256,6 +256,101 @@ If you run into any issues or have questions, please join our support group for 
 <blockquote><b>Support Group</b>: <b>{SUPPORT_GROUP}</b></blockquote>
 
 """
+
+HELP_MESSAGE_RICH = \
+"""<h1><tg-emoji emoji-id="5388953246486269495">📖</tg-emoji> <strong>Help Guide</strong></h1>
+<hr>
+<details><summary><tg-emoji emoji-id="5785045099142450328">🤔</tg-emoji> <strong>How to Convert a Pack?</strong></summary>
+<p>You have two simple options:</p>
+<ol>
+<li><strong>Send a Link</strong>: Copy the sticker or emoji pack&#39;s link and send it to me.</li>
+<li><strong>Send a Sticker/Emoji</strong>: Just send any sticker or emoji from the pack you want.</li>
+</ol>
+<p>I&#39;ll handle the rest!</p>
+</details>
+<details><summary> <tg-emoji emoji-id="5334998226636390258">👉</tg-emoji> <strong>How to Add Stickers to WhatsApp</strong></summary>
+<ol>
+<li><p><tg-emoji emoji-id="5256186019136421048">📱</tg-emoji> <strong>Install the App</strong>:<br>
+<br>
+You&#39;ll need a helper app. We recommend <strong>Sticker Maker</strong>.</p>
+<p><tg-emoji emoji-id="5386533208508609398">🔗</tg-emoji> <strong>Play Store</strong>: <strong><a href="https://play.google.com/store/apps/details?id=com.marsvard.stickermakerforwhatsapp">Click here</a></strong><br>
+<tg-emoji emoji-id="5384144180194848649">🔗</tg-emoji> <strong>App Store</strong>: <strong><a href="https://apps.apple.com/us/app/sticker-maker-studio/id1443326857">Click here</a></strong></p>
+</li>
+</ol>
+<p></p>
+<ol start="3">
+<li><p><tg-emoji emoji-id="5258134813302332906">📂</tg-emoji> <strong>Open the File</strong> <strong>with Sticker Maker</strong>:</p>
+<ol>
+<li><br>
+Once I send you the .wastickers file, tap on it here in Telegram.</li>
+<li>Choose to open the file with the <strong>Sticker Maker</strong> app.</li>
+</ol>
+</li>
+</ol>
+<p></p>
+<ol start="5">
+<li><p><tg-emoji emoji-id="5258336354642697821">⬇️</tg-emoji> <strong>Import</strong>:</p>
+<ol>
+<li>Inside the sticker maker app, tap &quot;Add to my library&quot;.</li>
+<li>Then &quot;Add to WhatsApp&quot;.</li>
+</ol>
+</li>
+</ol>
+<p><br>
+That&#39;s it, your stickers are ready!</p>
+</details>
+<details><summary><tg-emoji emoji-id="6037579284837567462">📋</tg-emoji> <strong>Important Notes</strong></summary>
+<ul>
+<li>Packs with more than 30 stickers will be split into multiple files since WhatsApp supports only 30 stickers per pack.</li>
+<li>During busy times, your request is placed in a queue to ensure fair processing.</li>
+<li><tg-emoji emoji-id="6080171114007367607">⭐</tg-emoji> Premium users get priority and are served first!</li>
+</ul>
+</details>
+<details><summary><tg-emoji emoji-id="5418077986656112171">✨</tg-emoji> <strong>Explore More Features</strong></summary>
+<ul>
+<li>Use /commands to see a full list of all available commands.</li>
+<li>Use /premium to check your premium status and learn about the benefits.</li>
+<li>You can check your position at any time using the /queue command</li>
+</ul>
+</details>
+<details><summary><tg-emoji emoji-id="5443038326535759644">💬</tg-emoji> <strong>Support</strong></summary>
+<p>If you run into any issues or have questions, please join our support group for assistance.</p>
+<blockquote><strong>Support Group</strong>: <strong><a href="https://t.me/nub_coder_s">@nub_coder_s</a></strong></blockquote>
+</details>"""
+
+HELP_IMPORT_MESSAGE = \
+"""<h2><tg-emoji emoji-id="5334998226636390258">👉</tg-emoji> <strong>How to Add Stickers to WhatsApp</strong></h2>
+<ol>
+<li><p><tg-emoji emoji-id="5256186019136421048">📱</tg-emoji> <strong>Install the App</strong>:<br>
+<br>
+You&#39;ll need a helper app. We recommend <strong>Sticker Maker</strong>.</p>
+<p><tg-emoji emoji-id="5386533208508609398">🔗</tg-emoji> <strong>Play Store</strong>: <strong><a href="https://play.google.com/store/apps/details?id=com.marsvard.stickermakerforwhatsapp">Click here</a></strong><br>
+<tg-emoji emoji-id="5384144180194848649">🔗</tg-emoji> <strong>App Store</strong>: <strong><a href="https://apps.apple.com/us/app/sticker-maker-studio/id1443326857">Click here</a></strong></p>
+</li>
+</ol>
+<hr>
+<ol start="2">
+<li><p><tg-emoji emoji-id="5258134813302332906">📂</tg-emoji> <strong>Open the File</strong> <strong>with Sticker Maker</strong>: </p>
+<ol>
+<li>Once I send you the .wastickers file, tap on it here in Telegram.</li>
+<li>Choose to open the file with the <strong>Sticker Maker</strong> app</li>
+</ol>
+</li>
+</ol>
+<hr>
+<ol start="3">
+<li><p><tg-emoji emoji-id="5258336354642697821">⬇️</tg-emoji> <strong>Import</strong>:</p>
+<ol>
+<li>Inside the sticker maker app, tap &quot;Add to my library&quot;.</li>
+<li>Then &quot;Add to WhatsApp&quot;.</li>
+</ol>
+</li>
+</ol>
+<hr>
+<p>That&#39;s it, your stickers are ready!</p>
+<details><summary><tg-emoji emoji-id="5370724846936267183">🤔</tg-emoji> <strong>Why</strong> multiple packs?</summary>
+<p>Packs with more than 30 stickers will be split into multiple files since <strong>WhatsApp supports only 30 stickers per pack</strong>.</p>
+</details>"""
 
 QUEUE_CHECK_MESSAGE = "<tg-emoji emoji-id='5258513401784573443'>📊</tg-emoji> <b>Queue Status</b>\n\nYour position: {position}\nTotal in queue: {total}"
 

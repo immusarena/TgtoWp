@@ -26,7 +26,7 @@ from src.utils.formatters import *
 from src.utils.file_helpers import *
 from src.utils.network_tasks import NetworkTask
 from src.bot.handlers.bg_task import BackGroundTask
-from src.bot.handlers.helper import HelperMethods, check_banned, estimate_wait_time, update_user_info
+from src.bot.handlers.helper import HelperMethods, check_banned, estimate_wait_time, update_user_info, send_rich_message, edit_rich_message
 from src.bot.handlers.template import TemplateHelper
 from src.bot.handlers.session import SessionHandler
 from src.bot.handlers.user import UserCommands
@@ -372,7 +372,7 @@ class BotHandlers:
 
                     logger.info(f"✅ Successfully forwarded pack {set_id} from cache to user {user_id}.")
                     await self.ctx.client.send_message(chat_id, AFTER_SUCCESSFUL_CONVERSION_MESSAGE,
-                                                        buttons= [[Button.inline("How to Import?", b"help", style = "primary", icon=5818947586702184246)]],
+                                                        buttons= [[Button.inline("How to Import?", b"help_import", style = None, icon=5818947586702184246)]],
                                                         link_preview=False, parse_mode="html")
                     await db.update_conversion_log(log_id, "completed_from_cache", datetime.now(timezone.utc), 0.0)
                     if COUNT_CACHE_HITS_AS_REQUESTS and is_direct_cache_hit:
@@ -840,7 +840,7 @@ class BotHandlers:
                         await self.ctx.client.send_message(entity=item.chat_id, message=message, link_preview=False)
 
                     await self.ctx.client.send_message(item.chat_id, AFTER_SUCCESSFUL_CONVERSION_MESSAGE,
-                                                        buttons= [[Button.inline("How to Import?", b"help", style = "primary", icon=5818947586702184246)]],
+                                                        buttons= [[Button.inline("How to Import?", b"help_import", style = None, icon=5818947586702184246)]],
                                                         link_preview=False, parse_mode="html")
                     status_for_db = "completed"
                 except UserIsBlockedError:
@@ -915,7 +915,7 @@ class BotHandlers:
                 # If all uploads were successful
                 if all_uploads_succeeded:
                     await self.ctx.client.send_message(item.chat_id, AFTER_SUCCESSFUL_CONVERSION_MESSAGE,
-                                                        buttons= [[Button.inline("How to Import?", b"help", style = "primary", icon=5818947586702184246)]],
+                                                        buttons= [[Button.inline("How to Import?", b"help_import", style = None, icon=5818947586702184246)]],
                                                         link_preview=False, parse_mode="html")
                     
         return status_for_db
@@ -1379,7 +1379,17 @@ class BotHandlers:
                 buttons = [
                     [Button.inline("Back to Start", b"start", style = "primary", icon=5258236805890710909), Button.inline("Commands", b"commands", style = "success", icon=5787544344906959608)]
                 ]
-                await event.edit(HELP_MESSAGE, buttons=buttons, link_preview=False, parse_mode='html')
+                await edit_rich_message(self.ctx.client, event.chat_id, event.message_id, HELP_MESSAGE_RICH, HELP_MESSAGE_FALLBACK, buttons=buttons, link_preview=False)
+
+            elif data == "help_import":
+                await event.answer()
+                buttons = [ [Button.inline("Back", b"post_conv", style = None, icon=5877629862306385808)]]
+                await edit_rich_message(self.ctx.client, event.chat_id, event.message_id, HELP_IMPORT_MESSAGE, HELP_MESSAGE_FALLBACK, buttons=buttons, link_preview=False)
+
+            elif data == "post_conv":
+                await event.answer()
+                buttons= [[Button.inline("How to Import?", b"help_import", style = None, icon=5818947586702184246)]]
+                await event.edit(AFTER_SUCCESSFUL_CONVERSION_MESSAGE, buttons=buttons, link_preview=False, parse_mode='html')
 
             elif data == "start":
                 await event.answer()
