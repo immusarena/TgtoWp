@@ -317,3 +317,9 @@ CONTACT_ADMIN_NOTIFICATION_HEADER = """
 <tg-emoji emoji-id="5258318620722733379">🚫</tg-emoji> Cancelled: <code>{cancelled}</code>
 <tg-emoji emoji-id="5258330865674494479">📍</tg-emoji> Total: <code>{total}</code>
 """
+
+AFTER_SUCCESSFUL_CONVERSION_MESSAGE = """<tg-emoji emoji-id='5386506901833921374'>📱</tg-emoji> To import to WhatsApp, use '<b>Sticker Maker</b>' app on your phone.
+<tg-emoji emoji-id='5386533208508609398'>🔗</tg-emoji> <b>Play Store</b>: <b><a href='https://play.google.com/store/apps/details?id=com.marsvard.stickermakerforwhatsapp'>Click here</a></b>
+<tg-emoji emoji-id='5384144180194848649'>🔗</tg-emoji> <b>App Store</b>: <b><a href='https://apps.apple.com/us/app/sticker-maker-studio/id1443326857'>Click here</a></b>
+
+Click the button below for detailed steps. Enjoy!"""

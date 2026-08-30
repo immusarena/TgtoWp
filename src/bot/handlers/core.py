@@ -371,7 +371,9 @@ class BotHandlers:
                         await self.ctx.client.send_message(entity=chat_id, message=message, link_preview=False)
 
                     logger.info(f"✅ Successfully forwarded pack {set_id} from cache to user {user_id}.")
-                    await self.ctx.client.send_message(chat_id, "<tg-emoji emoji-id='5872922883092648417'>📱</tg-emoji> To import to WhatsApp, use '<b>Sticker Maker</b>' app on your phone (/help for more info). Enjoy!", parse_mode="html")
+                    await self.ctx.client.send_message(chat_id, AFTER_SUCCESSFUL_CONVERSION_MESSAGE,
+                                                        buttons= [[Button.inline("How to Import?", b"help", style = "primary", icon=5818947586702184246)]],
+                                                        link_preview=False, parse_mode="html")
                     await db.update_conversion_log(log_id, "completed_from_cache", datetime.now(timezone.utc), 0.0)
                     if COUNT_CACHE_HITS_AS_REQUESTS and is_direct_cache_hit:
                         await db.increment_daily_requests(user_id)
@@ -837,7 +839,9 @@ class BotHandlers:
                     for message in cached_messages:
                         await self.ctx.client.send_message(entity=item.chat_id, message=message, link_preview=False)
 
-                    await self.ctx.client.send_message(item.chat_id, "<tg-emoji emoji-id='5872922883092648417'>📱</tg-emoji> To import to WhatsApp, use an app like '<b>Sticker Maker</b>' on your phone (/help for more info). Enjoy!", parse_mode='html')
+                    await self.ctx.client.send_message(item.chat_id, AFTER_SUCCESSFUL_CONVERSION_MESSAGE,
+                                                        buttons= [[Button.inline("How to Import?", b"help", style = "primary", icon=5818947586702184246)]],
+                                                        link_preview=False, parse_mode="html")
                     status_for_db = "completed"
                 except UserIsBlockedError:
                     # some dumbass block the bot even before it sends files
@@ -910,7 +914,9 @@ class BotHandlers:
 
                 # If all uploads were successful
                 if all_uploads_succeeded:
-                    await self.ctx.client.send_message(item.chat_id, "<tg-emoji emoji-id='5872922883092648417'>📱</tg-emoji> To import to WhatsApp, use an app like '<b>Sticker Maker</b>' on your phone (/help for more info). Enjoy!", parse_mode="html")
+                    await self.ctx.client.send_message(item.chat_id, AFTER_SUCCESSFUL_CONVERSION_MESSAGE,
+                                                        buttons= [[Button.inline("How to Import?", b"help", style = "primary", icon=5818947586702184246)]],
+                                                        link_preview=False, parse_mode="html")
                     
         return status_for_db
 
