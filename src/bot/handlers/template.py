@@ -36,7 +36,7 @@ class TemplateHelper:
             buttons = [
                 [Button.inline(f"Extend for 1 Month ({PREMIUM_STARS_MONTHLY} ⭐)", b"extend_premium_30", style="success", icon=5366238787955347845)], 
                 [Button.inline(f"Extend for 1 Year ({PREMIUM_STARS_YEARLY} ⭐)", b"extend_premium_365", style="success", icon=5339520934573255920)],
-                [Button.inline("Back to Start", b"start", style = "primary", icon=5258236805890710909), Button.url("Contact Admin", SUPPORT_GROUP_LINK, style="primary", icon=5895457880710058528)]
+                [Button.inline("Back to Start", b"start", style = None, icon=5258236805890710909), Button.url("Contact Admin", SUPPORT_GROUP_LINK, style=None, icon=5895457880710058528)]
             ]
         else:
             status_message = (
@@ -50,7 +50,7 @@ class TemplateHelper:
             buttons = [
                 [Button.inline(f"Buy 1 Month ({PREMIUM_STARS_MONTHLY} ⭐)", b"buy_premium_30", style="success", icon=5366238787955347845)], 
                 [Button.inline(f"Buy 1 Year ({PREMIUM_STARS_YEARLY} ⭐)", b"buy_premium_365", style="success", icon=5339520934573255920)],
-                [Button.inline("Back to Start", b"start", style = "primary", icon=5258236805890710909), Button.url("Contact Admin", SUPPORT_GROUP_LINK, style="primary", icon=5895457880710058528)]
+                [Button.inline("Back to Start", b"start", style = None, icon=5258236805890710909), Button.url("Contact Admin", SUPPORT_GROUP_LINK, style=None, icon=5895457880710058528)]
         ]
 
         

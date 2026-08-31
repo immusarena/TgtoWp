@@ -52,7 +52,7 @@ class UserCommands:
         """Handle /help command."""
         if event.is_private:
             buttons = [
-                [Button.inline("Back to Start", b"start", style = "primary", icon=5258236805890710909), Button.inline("Commands", b"commands", style = "success", icon=5787544344906959608)]
+                [Button.inline("Back to Start", b"start", style = None, icon=5258236805890710909), Button.inline("Commands", b"commands", style = None, icon=5787544344906959608)]
             ]
         else:
             deep_link = f"https://t.me/{self.ctx.bot_info.username}?start=start"
@@ -125,18 +125,18 @@ class UserCommands:
 
         if position == -1: # user is processing
             message = "<tg-emoji emoji-id='5188481279963715781'>🚀</tg-emoji> Your pack is currently being processed! It should be ready soon."
-            buttons = [[Button.inline("Refresh", b"check_queue", style = "primary", icon=5260687119092817530)]]
+            buttons = [[Button.inline("Refresh", b"check_queue", style = None, icon=5260687119092817530)]]
         elif position > 0: # in queue
             message = QUEUE_CHECK_MESSAGE.format(
                 position=position,
                 total=total
             )
-            buttons = [[Button.inline("Refresh", b"check_queue", style = "primary", icon=5260687119092817530)]]
+            buttons = [[Button.inline("Refresh", b"check_queue", style = None, icon=5260687119092817530)]]
         else: # not in the queue
             message = f"<tg-emoji emoji-id='5305381957524272531'>📊</tg-emoji> You're not in the queue.\nTotal in queue: {total}."
             buttons = [
-                [Button.inline("Refresh", b"check_queue", style = "success", icon=5260687119092817530)],
-                [Button.inline("Back to Start", b"start", style = "primary", icon=5258236805890710909)]
+                [Button.inline("Refresh", b"check_queue", style = None, icon=5260687119092817530)],
+                [Button.inline("Back to Start", b"start", style = None, icon=5258236805890710909)]
             ]
         
         if mode == "callback":
@@ -157,7 +157,7 @@ class UserCommands:
     async def commands_command(self, event: events.NewMessage.Event):
         """Handles the /commands command."""
         buttons = [
-            [Button.inline("Back to Start", b"start", style = "primary", icon=5258236805890710909), Button.inline("Help", b"help", style = "success", icon=5818947586702184246)]
+            [Button.inline("Back to Start", b"start", style = None, icon=5258236805890710909), Button.inline("Help", b"help", style = None, icon=5818947586702184246)]
         ]
         await event.reply(COMMANDS_MESSAGE, buttons=buttons, parse_mode='html')
         raise StopPropagation
@@ -183,7 +183,7 @@ class UserCommands:
         buttons = [
             [Button.inline("Send Message", f"contact_send_{session.session_id}", style="success", icon=5253742260054409879), 
             Button.inline("Cancel", f"contact_cancel_{session.session_id}", style="danger", icon=5465665476971471368)],
-            [Button.url("Support Group", SUPPORT_GROUP_LINK, style="primary", icon=5443038326535759644)]
+            [Button.url("Support Group", SUPPORT_GROUP_LINK, style=None, icon=5443038326535759644)]
         ]
         if mode == "callback":
             await event.edit(CONTACT_PROMPT_MESSAGE, buttons=buttons, link_preview=False, parse_mode='html')

@@ -1358,7 +1358,7 @@ class BotHandlers:
             elif data == "help":
                 await event.answer()
                 buttons = [
-                    [Button.inline("Back to Start", b"start", style = "primary", icon=5258236805890710909), Button.inline("Commands", b"commands", style = "success", icon=5787544344906959608)]
+                    [Button.inline("Back to Start", b"start", style = None, icon=5258236805890710909), Button.inline("Commands", b"commands", style = None, icon=5787544344906959608)]
                 ]
                 await edit_rich_message(self.ctx.client, event.chat_id, event.message_id, HELP_MESSAGE_RICH, HELP_MESSAGE_FALLBACK, buttons=buttons, link_preview=False)
 
@@ -1417,7 +1417,7 @@ class BotHandlers:
             elif data == "commands":
                 await event.answer()
                 buttons = [
-                    [Button.inline("Back to Start", b"start", style = "primary", icon=5258236805890710909), Button.inline("Help", b"help", style = "success", icon=5818947586702184246)]
+                    [Button.inline("Back to Start", b"start", style = None, icon=5258236805890710909), Button.inline("Help", b"help", style = None, icon=5818947586702184246)]
                 ]
                 await event.edit(COMMANDS_MESSAGE, buttons=buttons, parse_mode='html')
 
