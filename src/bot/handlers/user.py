@@ -182,7 +182,6 @@ class UserCommands:
             await event.edit(CONTACT_PROMPT_MESSAGE, buttons=buttons, link_preview=False, parse_mode='html')
         else:
             await event.reply(CONTACT_PROMPT_MESSAGE, buttons=buttons, link_preview=False, parse_mode='html')
-        raise StopPropagation
 
     @check_banned
     @update_user_info
@@ -191,6 +190,7 @@ class UserCommands:
         user = await event.get_sender()
 
         await self.show_contact_prompt(event, user.id, mode="message")
+        raise StopPropagation
 
     @check_banned
     @update_user_info
