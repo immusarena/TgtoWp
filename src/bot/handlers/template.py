@@ -19,7 +19,7 @@ class TemplateHelper:
             f"<blockquote><tg-emoji emoji-id='5188481279963715781'>🚀</tg-emoji> <b>Priority Queue:</b> Your requests jump to the front of the line.</blockquote>\n"
             f"<blockquote><tg-emoji emoji-id='5370951118698339120'>✍️</tg-emoji> <b>Custom Pack Details:</b> Set your own custom title and author name for your packs.</blockquote>\n"
             f"<blockquote><tg-emoji emoji-id='5451882707875276247'>⚙️</tg-emoji> <b>Concurrent Conversions:</b> Convert up to {MAX_CONCURRENT_PREMIUM_REQUESTS} packs at once.</blockquote>\n"
-            f"<blockquote><tg-emoji emoji-id='5258113901106580375'>⏳</tg-emoji> <b>Convert Large Packs:</b> Convert large packs containing more stickers/emojis than usual.</blockquote>\n"
+            f"<blockquote><tg-emoji emoji-id='6298790803414189709'>♐</tg-emoji> <b>Convert Large Packs:</b> Convert large packs containing more stickers/emojis than usual.</blockquote>\n"
             f"<blockquote><tg-emoji emoji-id='5449683594425410231'>📈</tg-emoji> <b>Higher Daily Limit:</b> Convert up to <b>{DAILY_LIMIT_PREMIUM}</b> packs per day (vs. {DAILY_LIMIT_REGULAR} for regular users).</blockquote>\n"
             f"<blockquote><tg-emoji emoji-id='5443038326535759644'>💬</tg-emoji> <b>Priority Support:</b> Get faster help in the support group.</blockquote>\n"
         )
