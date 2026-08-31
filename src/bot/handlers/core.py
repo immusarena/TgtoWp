@@ -682,8 +682,8 @@ class BotHandlers:
             item_name = "emojis" if is_emoji_pack else "stickers"
             message = (f"<tg-emoji emoji-id='5339166917598916047'>📊</tg-emoji> <b>Pack Details:</b>\n"
                     f"<tg-emoji emoji-id='5787399776307776752'>◾️</tg-emoji> Name: <a href=\"{pack_url}\">{safe_pack_title}</a>\n"
-                    f"<tg-emoji emoji-id='5787399776307776752'>◾️</tg-emoji> Total {item_name}: {total_stickers}\n"
-                    f"<tg-emoji emoji-id='5787399776307776752'>◾️</tg-emoji> This will create {num_packs} .wastickers {'file' if num_packs == 1 else 'files'}.")
+                    f"<tg-emoji emoji-id='5787399776307776752'>◾️</tg-emoji> Total {item_name}: {total_stickers}\n" +
+                    (f"<blockquote>This pack will be split into {num_packs} packs. <a href='{WHY_SPLIT_LINK}'>Why?</a></blockquote>" if num_packs > 1 else ""))
             await self.ctx.client.send_message(item.chat_id, message, parse_mode='html', link_preview=False)
 
         # run the conversion with a timeout (either 60 sec or 3x the estimated time)

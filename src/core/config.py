@@ -67,6 +67,9 @@ MAX_FILES_PER_CACHE_CHANNEL = 95000
 cache_ids_str = os.getenv("CACHE_CHANNEL_IDS", "")
 CACHE_CHANNEL_IDS = [int(channel_id) for channel_id in cache_ids_str.split(',') if channel_id.strip()]
 
+# ----- Links ----------
+WHY_SPLIT_LINK = "https://telegra.ph/Why-Multiple-Packs-08-31"
+
 # ------ support group and required channels/groups ----------
 # Support group for bot related queries (will be used in help message)
 def _normalize_link(l: str) -> str:
