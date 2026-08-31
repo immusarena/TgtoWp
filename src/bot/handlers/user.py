@@ -117,12 +117,9 @@ class UserCommands:
         await event.reply(message_text, buttons=buttons, parse_mode='html', link_preview=False)
         raise StopPropagation
 
-    @check_banned
-    @update_user_info
-    async def queue_command(self, event: events.NewMessage.Event):
-        """Command to check user's position."""
-        user = await event.get_sender()
-        position = await queue_manager.get_queue_position(user.id)
+    async def show_queue_status(self, event: events.CallbackQuery.Event | events.NewMessage.Event, user_id: int, mode: str):
+        """Shows the queue status to the user."""
+        position = await queue_manager.get_queue_position(user_id)
         stats = await queue_manager.get_queue_stats()
         total = stats["total_waiting"] + (1 if stats["currently_processing"] else 0)
 
@@ -136,13 +133,23 @@ class UserCommands:
             )
             buttons = [[Button.inline("Refresh", b"check_queue", style = "primary", icon=5260687119092817530)]]
         else: # not in the queue
-            message = f"<tg-emoji emoji-id='5305381957524272531'>📊</tg-emoji> You're not in the queue. Total in queue: {total}."
+            message = f"<tg-emoji emoji-id='5305381957524272531'>📊</tg-emoji> You're not in the queue.\nTotal in queue: {total}."
             buttons = [
                 [Button.inline("Refresh", b"check_queue", style = "success", icon=5260687119092817530)],
                 [Button.inline("Back to Start", b"start", style = "primary", icon=5258236805890710909)]
             ]
         
-        await event.reply(message, buttons=buttons, parse_mode='html')
+        if mode == "callback":
+            await event.edit(message, buttons=buttons, parse_mode='html')
+        else:
+            await event.reply(message, buttons=buttons, parse_mode='html')
+
+    @check_banned
+    @update_user_info
+    async def queue_command(self, event: events.NewMessage.Event):
+        """Command to check user's position."""
+        user = await event.get_sender()
+        await self.show_queue_status(event, user.id, mode="message")
         raise StopPropagation
     
     @check_banned

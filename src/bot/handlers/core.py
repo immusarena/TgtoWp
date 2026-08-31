@@ -1349,28 +1349,9 @@ class BotHandlers:
                     await event.edit("<tg-emoji emoji-id='5980953710157632545'>❌</tg-emoji> Could not cancel. The item may be processing or completed.", parse_mode="html")
 
             elif data == "check_queue":
-                position = await queue_manager.get_queue_position(user_id)
-                stats = await queue_manager.get_queue_stats()
-                total = stats["total_waiting"] + (1 if stats["currently_processing"] else 0)
-
-                if position == -1: # user is processing
-                    message = "<tg-emoji emoji-id='5188481279963715781'>🚀</tg-emoji> Your pack is currently being processed! It should be ready soon."
-                    buttons = [[Button.inline("Refresh", b"check_queue", style = "primary", icon=5260687119092817530)]]
-                elif position > 0: # in queue
-                    message = QUEUE_CHECK_MESSAGE.format(
-                        position=position,
-                        total=total
-                    )
-                    buttons = [[Button.inline("Refresh", b"check_queue", style = "primary", icon=5260687119092817530)]]
-                else: # not in the queue
-                    message = f"<tg-emoji emoji-id='5305381957524272531'>📊</tg-emoji> You're not in the queue. Total in queue: {total}."
-                    buttons = [
-                        [Button.inline("Refresh", b"check_queue", style = "success", icon=5260687119092817530)],
-                        [Button.inline("Back to Start", b"start", style = "primary", icon=5258236805890710909)]
-                    ]
                 try:
                     await event.answer("Refreshed!")
-                    await event.edit(message, buttons=buttons,parse_mode='html')
+                    await self.ctx.user.show_queue_status(event, user_id, mode="callback")
                 except Exception as e:
                     logger.debug(f"Could not edit the check_queue message: {e}")
             
