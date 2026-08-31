@@ -386,14 +386,14 @@ After joining try again!""" if channel_len > 1 else "")
 COMMANDS_MESSAGE = """
 <tg-emoji emoji-id="5258093637450866522">🤖</tg-emoji> <b>Here are the commands you can use:</b>
 
-• /start - <tg-emoji emoji-id="5247133031235329609">👋</tg-emoji> Displays the welcome message.
-• /help - <tg-emoji emoji-id="5467461928647399673">📖</tg-emoji> Shows the detailed help guide.
-• /queue - <tg-emoji emoji-id="5258513401784573443">📊</tg-emoji> Checks your current position in the conversion queue.
-• /mystats - <tg-emoji emoji-id="5255900794653261326">📈</tg-emoji> Shows your usage statistics and current role.
-• /premium - <tg-emoji emoji-id="5258165702707125574">⭐</tg-emoji> Displays your premium status and its benefits.
-• /commands - <tg-emoji emoji-id="5258503720928288433">⚙️</tg-emoji> Shows a list of Available Commands
-• /suggest - <tg-emoji emoji-id="5255813559572508065">✨</tg-emoji> Get recommendations for popular packs.
-• /contact - <tg-emoji emoji-id="5260535596941582167">📩</tg-emoji> Send a message to the bot administrators.
+• /start - <tg-emoji emoji-id="6041921818896372382">👋</tg-emoji> Displays the welcome message.
+• /help - <tg-emoji emoji-id="6030848053177486888">📖</tg-emoji> Shows the detailed help guide.
+• /queue - <tg-emoji emoji-id="6032609071373226027">👥</tg-emoji> Checks your current position in the conversion queue.
+• /mystats - <tg-emoji emoji-id="5936143551854285132">📊</tg-emoji> Shows your usage statistics and current role.
+• /premium - <tg-emoji emoji-id="5886685105065300941">⭐</tg-emoji> Displays your premium status and its benefits.
+• /commands - <tg-emoji emoji-id="6028435952299413210">⚙️</tg-emoji> Shows a list of Available Commands
+• /suggest - <tg-emoji emoji-id="6037533152593842454">✨</tg-emoji> Get recommendations for popular packs.
+• /contact - <tg-emoji emoji-id="6037421444789440735">📩</tg-emoji> Send a message to the bot administrators.
 
 Just send any of these commands to get started!
 """
