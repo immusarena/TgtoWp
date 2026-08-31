@@ -440,7 +440,7 @@ class BotHandlers:
 
         if event.is_reply and len(active_sessions_with_flow) >= 1:
             # user replied to a wrong message or expired session
-            await event.reply("<tg-emoji emoji-id='5915991028430542030'>❌</tg-emoji> The messsage you replied to is not a valid input action or has expired.", parse_mode='html')
+            await event.reply("<tg-emoji emoji-id='5255772095958229697'>❌</tg-emoji> The messsage you replied to is not a valid input action or has expired.", parse_mode='html')
             return
         
         if len(active_sessions_with_flow) == 1: # single input session
@@ -490,12 +490,12 @@ class BotHandlers:
             if realistic_position >= limit:
                 buttons = None
                 if is_premium:
-                    message = (f"<tg-emoji emoji-id='5915991028430542030'>🚫</tg-emoji> <b>You've reached your limit!</b>\n\n"
+                    message = (f"<tg-emoji emoji-id='5255772095958229697'>🚫</tg-emoji> <b>You've reached your limit!</b>\n\n"
                             f"You currently have <b>{realistic_position}/{limit}</b> items in the queue. "
                             f"Please wait for one to complete before adding more.")
                     buttons = [[Button.inline("Check Queue", b"check_queue", style="primary", icon=5258513401784573443)]]
                 else:
-                    message = (f"<tg-emoji emoji-id='5915991028430542030'>🚫</tg-emoji> You're already in the queue! Please wait for your current request to complete."
+                    message = (f"<tg-emoji emoji-id='5255772095958229697'>🚫</tg-emoji> You're already in the queue! Please wait for your current request to complete."
                             f"\n\nUpgrade to <b>Premium</b> to convert multiple packs <b>at the same time</b>!")
                     buttons = [[Button.inline("Check Queue", b"check_queue", style="primary", icon=5258513401784573443), 
                                 Button.inline("Learn about Premium", b"premium", style="success", icon=5967522716062847679)]]

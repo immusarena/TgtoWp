@@ -179,7 +179,7 @@ class SessionHandler:
 
             if not event.text or not event.text.strip():
                 await event.delete()
-                msg = await event.respond("<tg-emoji emoji-id='5915991028430542030'>⚠️</tg-emoji> Only valid <b>text messages</b> are allowed. Please try again.", parse_mode='html')
+                msg = await event.respond("<tg-emoji emoji-id='5255772095958229697'>⚠️</tg-emoji> Only valid <b>text messages</b> are allowed. Please try again.", parse_mode='html')
                 await session_manager.update(user_id, Flow.CUSTOMIZE, session.session_id,
                                                  payload_mutator=lambda p: p.setdefault('failed_inputs', []).append(msg.id))
                 return
@@ -189,7 +189,7 @@ class SessionHandler:
             if session.state == 'awaiting_custom_title':
                 if len(user_input) > 50:
                     await event.delete()
-                    msg = await event.respond("<tg-emoji emoji-id='5915991028430542030'>⚠️</tg-emoji> Title too long (max 50 chars). Please try again.", parse_mode='html')
+                    msg = await event.respond("<tg-emoji emoji-id='5255772095958229697'>⚠️</tg-emoji> Title too long (max 50 chars). Please try again.", parse_mode='html')
                     await session_manager.update(user_id, Flow.CUSTOMIZE, session.session_id, 
                                                  payload_mutator=lambda p: p.setdefault('failed_inputs', []).append(msg.id))
                     return
@@ -198,7 +198,7 @@ class SessionHandler:
             elif session.state == 'awaiting_custom_author':
                 if len(user_input) > 30:
                     await event.delete()
-                    msg = await event.respond("<tg-emoji emoji-id='5915991028430542030'>⚠️</tg-emoji> Author name too long (max 30 chars). Please try again.", parse_mode='html')
+                    msg = await event.respond("<tg-emoji emoji-id='5255772095958229697'>⚠️</tg-emoji> Author name too long (max 30 chars). Please try again.", parse_mode='html')
                     await session_manager.update(user_id, Flow.CUSTOMIZE, session.session_id, 
                                                  payload_mutator=lambda p: p.setdefault('failed_inputs', []).append(msg.id))
                     return

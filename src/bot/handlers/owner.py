@@ -770,13 +770,13 @@ class OwnerCommands:
         # Usage: /refund <charge_id> <user_id> [deduct] [no-db]
         args = event.message.text.split()
         if len(args) < 3:
-            await event.reply("<tg-emoji emoji-id='5915991028430542030'>⚠️</tg-emoji> Usage: <code>/refund &lt;charge_id&gt; &lt;user_id&gt; [deduct] [no-db]</code>", parse_mode="html")
+            await event.reply("<tg-emoji emoji-id='5255772095958229697'>⚠️</tg-emoji> Usage: <code>/refund &lt;charge_id&gt; &lt;user_id&gt; [deduct] [no-db]</code>", parse_mode="html")
             return
 
         try:
             target_user_id = int(args[2])
         except (ValueError, IndexError):
-            await event.reply("<tg-emoji emoji-id='5915991028430542030'>⚠️</tg-emoji> Usage: <code>/refund &lt;charge_id&gt; &lt;user_id&gt; [deduct] [no-db]</code>", parse_mode="html")
+            await event.reply("<tg-emoji emoji-id='5255772095958229697'>⚠️</tg-emoji> Usage: <code>/refund &lt;charge_id&gt; &lt;user_id&gt; [deduct] [no-db]</code>", parse_mode="html")
             return
 
         charge_id = args[1]
