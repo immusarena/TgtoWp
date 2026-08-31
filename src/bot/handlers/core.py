@@ -1397,14 +1397,14 @@ class BotHandlers:
             
             elif data == "premium":
                 await event.answer()
-                message_text, buttons = await self.templates.get_premium_message_text(user_id)
+                message_text, buttons = await self.templates.get_premium_text_and_buttons(user_id)
                 await event.edit(message_text, buttons=buttons, parse_mode='html', link_preview=False)
 
             elif data.startswith("buy_premium_") or data.startswith("extend_premium_"):
                 await event.answer()
 
                 if data.startswith("buy_premium_") and await db.is_premium(user_id):
-                    message_text, buttons = await self.templates.get_premium_message_text(user_id)
+                    message_text, buttons = await self.templates.get_premium_text_and_buttons(user_id)
                     await event.edit(message_text, buttons=buttons, parse_mode='html', link_preview=False)
                     return
                 

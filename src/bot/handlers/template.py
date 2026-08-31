@@ -11,7 +11,7 @@ class TemplateHelper:
     def __init__(self, ctx: BotContext):
         self.ctx = ctx
 
-    async def get_premium_message_text(self, user_id: int) -> tuple[str, list[list[Button]]]:
+    async def get_premium_text_and_buttons(self, user_id: int) -> tuple[str, list[list[Button]]]:
         """Generates the dynamic premium status message for a user."""
         # Base message with premium benefits
         benefits_message = (

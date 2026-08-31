@@ -112,7 +112,7 @@ class UserCommands:
     async def premium_command(self, event: events.NewMessage.Event):
         """Displays the user's premium status and benefits."""
         user = await event.get_sender()
-        message_text, buttons = await self.ctx.templates.get_premium_message_text(user.id)
+        message_text, buttons = await self.ctx.templates.get_premium_text_and_buttons(user.id)
 
         await event.reply(message_text, buttons=buttons, parse_mode='html', link_preview=False)
         raise StopPropagation
