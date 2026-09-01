@@ -1,14 +1,66 @@
 import asyncpg
 import logging
+from src.db.migrations import LATEST_DB_VERSION, MIGRATIONS
 from src.db.pool import get_pool
 
 logger = logging.getLogger(__name__)
+
+async def apply_migrations(conn):
+    """Detects database version and applies pending migrations sequentially."""
+    # create the version tracking table if not exists
+    await conn.execute("""
+        CREATE TABLE IF NOT EXISTS schema_version (
+            version INTEGER PRIMARY KEY,
+            updated_at TIMESTAMP WITH TIME ZONE NOT NULL
+        )
+    """)
+
+    current_version = await conn.fetchval("SELECT MAX(version) FROM schema_version")
+
+    # check if this is an existing legacy database or a brand new database.
+    if current_version is None:
+        table_exists = await conn.fetchval("""
+            SELECT EXISTS (
+                SELECT 1 FROM information_schema.tables 
+                WHERE table_schema = 'public' AND table_name = 'users'
+            )
+        """)
+
+        if not table_exists:
+            # brand new database, set latest version
+            current_version = LATEST_DB_VERSION
+            await conn.execute("INSERT INTO schema_version (version, updated_at) VALUES ($1, NOW())", LATEST_DB_VERSION)
+            logger.info(f"Initialized fresh database at version {LATEST_DB_VERSION}.")
+        else:
+            # existing legacy database, 
+            # set version to 0 as this database was created before migration tracking was introduced
+            current_version = 0
+            await conn.execute("INSERT INTO schema_version (version, updated_at) VALUES (0, NOW())")
+            logger.info("Detected legacy database. Starting migration tracking from version 0.")
+
+    # apply pending migrations one by one
+    if current_version < LATEST_DB_VERSION:
+        logger.info(f"Database version ({current_version}) is behind latest ({LATEST_DB_VERSION}). Applying migrations...")
+
+        for migration in MIGRATIONS:
+            if current_version < migration.VERSION:
+                async with conn.transaction():
+                    await migration.migrate(conn)
+                    await conn.execute(
+                        "UPDATE schema_version SET version = $1, updated_at = NOW()",
+                        migration.VERSION
+                    )
+                current_version = migration.VERSION
+                logger.info(f"Migration v{migration.VERSION} applied successfully.")
 
 async def init_db():
     """Initializes the database and creates tables if they don't exist."""
     pool = get_pool()
     try:
         async with pool.acquire() as conn:
+            # apply migrations in case the database is already there and behind the latest version
+            await apply_migrations(conn)
+
             async with conn.transaction():
             
                 # For logging all unique users who start the bot
