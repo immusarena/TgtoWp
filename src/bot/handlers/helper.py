@@ -346,14 +346,15 @@ class HelperMethods:
             logger.warning(f"Failed to send customization prompt to user {user_id}: {e}")
 
 
-def estimate_wait_time(sticker_doc_info: list) -> float:
+def estimate_wait_time(doc_info: List[List[int | str]]) -> float:
     """
     Calculates estimated wait time in seconds based on the type of each sticker/emoji.
     """
     total_seconds = 0.0
 
     # Time for processing each sticker/emoji
-    for doc in sticker_doc_info:
+    for item in doc_info:
+        doc = item[1] if isinstance(item, (list, tuple)) and len(item) > 1 else (item if isinstance(item, str) else "")
         if doc == 'application/x-tgsticker':  # TGS file
             total_seconds += 2
         elif doc == 'video/webm':  # WebM
@@ -363,7 +364,7 @@ def estimate_wait_time(sticker_doc_info: list) -> float:
         else: # Others if any, we prbbly wont get any
             total_seconds += 1
 
-    num_packs = math.ceil(len(sticker_doc_info)/30)
+    num_packs = math.ceil(len(doc_info)/30)
     total_seconds += DOWNLOAD_TIMEOUT * num_packs
     
     return total_seconds

@@ -1,4 +1,7 @@
+from . import v001
 
-MIGRATIONS = []
+MIGRATIONS = [
+    v001
+]
 
 LATEST_DB_VERSION = max((m.VERSION for m in MIGRATIONS), default=0)

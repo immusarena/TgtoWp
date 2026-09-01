@@ -1,3 +1,4 @@
+import json
 import asyncpg
 import logging
 from typing import List, Optional
@@ -15,6 +16,7 @@ async def add_or_update_sticker_set_details(
     is_emoji: bool,
     pack_title: str,
     sticker_count: int,
+    doc_info: List[List[int | str]] | str,
     conversion_duration: float,
     is_system_process: bool = False,
     user_id: Optional[int] = None
@@ -26,6 +28,7 @@ async def add_or_update_sticker_set_details(
     pool = get_pool()
     rounded_duration = round(conversion_duration, 2)
     now = utcnow()
+    doc_info_json = doc_info if isinstance(doc_info, str) else json.dumps(doc_info or [])
     
     # we need to go twice for retry in case of short_name conflict
     for _ in range(2): 
@@ -34,19 +37,20 @@ async def add_or_update_sticker_set_details(
                 # 1. Upsert pack details
                 await conn.execute("""
                     INSERT INTO sticker_set_details (
-                        set_id, short_name, is_emoji, pack_title, sticker_count,
+                        set_id, short_name, is_emoji, pack_title, sticker_count, doc_info,
                         user_count, request_count, last_conversion_duration, cache_score,
                         first_seen, last_updated
                     )
-                    VALUES ($1, $2, $3, $4, $5, 0, 0, $6, $7, $8, $8)
+                    VALUES ($1, $2, $3, $4, $5, $6, 0, 0, $7, $8, $9, $9)
                     ON CONFLICT (set_id) DO UPDATE SET
                         pack_title = EXCLUDED.pack_title,
                         short_name = EXCLUDED.short_name,
                         sticker_count = EXCLUDED.sticker_count,
+                        doc_info = EXCLUDED.doc_info,
                         last_conversion_duration = EXCLUDED.last_conversion_duration,
                         last_updated = EXCLUDED.last_updated
                 """, set_id, short_name, is_emoji, pack_title, sticker_count,
-                     rounded_duration,
+                     doc_info_json, rounded_duration,
                      (CACHE_SCORE_TIME_WEIGHT * rounded_duration),
                      now)
 

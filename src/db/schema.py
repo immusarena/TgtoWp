@@ -314,6 +314,7 @@ async def init_db():
                         is_emoji BOOLEAN NOT NULL,
                         pack_title TEXT,
                         sticker_count INTEGER,
+                        doc_info JSONB NOT NULL DEFAULT '[]'::jsonb,
                         user_count INTEGER DEFAULT 1,
                         request_count INTEGER DEFAULT 1,
                         last_conversion_duration REAL,

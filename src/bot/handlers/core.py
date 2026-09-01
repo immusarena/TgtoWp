@@ -342,10 +342,9 @@ class BotHandlers:
         user_id = sender_id
         set_id = sticker_set_info['set_id']
         current_title = sticker_set_info['title']
-        current_sticker_count = len(sticker_set_info['doc_info'])
 
         # Check if the pack is cached and up-to-date
-        cache_status, channel_id, message_ids = await db.is_pack_cached(set_id, current_title, current_sticker_count)
+        cache_status, channel_id, message_ids = await db.is_pack_cached(set_id, current_title, sticker_set_info['doc_info'])
         
         # --- hehe cache hit ---
         if cache_status == 'hit':
@@ -525,8 +524,8 @@ class BotHandlers:
                     await event.reply("<tg-emoji emoji-id='5019523782004441717'>❌</tg-emoji> An error occured while fetching the sticker pack. Please try again later!", parse_mode='html')
                     return
                     
-            sticker_set_doc_mime_type = [doc.mime_type for doc in sticker_set.documents]
-            sticker_set_info = {"set_id": sticker_set.set.id, "access_hash": sticker_set.set.access_hash, "short_name": sticker_set.set.short_name, "is_emoji": sticker_set.set.emojis, "doc_info": sticker_set_doc_mime_type, "title": sticker_set.set.title, }
+            doc_info = [[doc.id, doc.mime_type] for doc in sticker_set.documents]
+            sticker_set_info = {"set_id": sticker_set.set.id, "access_hash": sticker_set.set.access_hash, "short_name": sticker_set.set.short_name, "is_emoji": sticker_set.set.emojis, "doc_info": doc_info, "title": sticker_set.set.title, }
             if is_premium:
                 # For premium users we use special customizayion flow
                 event_info = {'user_id': event.sender_id, 'chat_id': event.chat_id, 'message_id': event.message.id}
@@ -649,6 +648,7 @@ class BotHandlers:
         pack_title = sticker_set.set.title
         safe_pack_title = html.escape(pack_title)
         total_stickers = len(sticker_set.documents)
+        doc_info = [[doc.id, doc.mime_type] for doc in sticker_set.documents]
         num_packs = (total_stickers + MAX_STICKERS_PER_PACK - 1) // MAX_STICKERS_PER_PACK
         pack_short_name = sticker_set.set.short_name
         is_emoji_pack = sticker_set.set.emojis
@@ -750,6 +750,7 @@ class BotHandlers:
             is_emoji=is_emoji_pack,
             pack_title=pack_title,
             sticker_count=total_stickers,
+            doc_info=doc_info,
             conversion_duration=conversion_duration,
             is_system_process=is_silent_mode,
             user_id=item.user_id if not is_silent_mode else None
@@ -946,7 +947,7 @@ class BotHandlers:
                 if item.is_silent_mode:
                     sticker_set_info = item.sticker_set_info
                     try:
-                        cache_status, channel_id, msg_ids = await db.is_pack_cached(sticker_set_info['set_id'], sticker_set_info['title'], len(sticker_set_info['doc_info']))
+                        cache_status, channel_id, msg_ids = await db.is_pack_cached(sticker_set_info['set_id'], sticker_set_info['title'], sticker_set_info['doc_info'])
 
                         if cache_status == 'hit':
                             # The DB says it's cached. Let's quickly verify the files are still there.
@@ -1071,8 +1072,8 @@ class BotHandlers:
                 pack_url = f"https://t.me/add{'emoji' if is_emoji else 'stickers'}/{short_name}"
                 log_id = await db.log_conversion_request(system_id, sticker_set.set.id, pack_url, is_emoji)
 
-                sticker_set_doc_mime_type = [doc.mime_type for doc in sticker_set.documents]
-                sticker_set_info = {"set_id": sticker_set.set.id, "access_hash": sticker_set.set.access_hash, "short_name": sticker_set.set.short_name, "is_emoji": sticker_set.set.emojis, "doc_info": sticker_set_doc_mime_type, "title": sticker_set.set.title, }
+                doc_info = [[doc.id, doc.mime_type] for doc in sticker_set.documents]
+                sticker_set_info = {"set_id": sticker_set.set.id, "access_hash": sticker_set.set.access_hash, "short_name": sticker_set.set.short_name, "is_emoji": sticker_set.set.emojis, "doc_info": doc_info, "title": sticker_set.set.title, }
                 estimated_seconds = estimate_wait_time(sticker_set_info['doc_info'])
 
                 await queue_manager.add_to_queue(
@@ -1146,9 +1147,9 @@ class BotHandlers:
                 
                 set_id = sticker_set.set.id
                 set_title = sticker_set.set.title
-                set_count = len(sticker_set.documents)
+                doc_info = [[doc.id, doc.mime_type] for doc in sticker_set.documents]
 
-                cache_status, channel_id, message_ids = await db.is_pack_cached(set_id, set_title, set_count)
+                cache_status, channel_id, message_ids = await db.is_pack_cached(set_id, set_title, doc_info)
                 
                 if cache_status == 'hit':
                     try:
@@ -1172,8 +1173,7 @@ class BotHandlers:
                 pack_url = f"https://t.me/add{'emoji' if is_emoji else 'stickers'}/{short_name}"
                 log_id = await db.log_conversion_request(system_id, sticker_set.set.id, pack_url, is_emoji)
                 
-                sticker_set_doc_mime_type = [doc.mime_type for doc in sticker_set.documents]
-                sticker_set_info = {"set_id": sticker_set.set.id, "access_hash": sticker_set.set.access_hash, "short_name": sticker_set.set.short_name, "is_emoji": sticker_set.set.emojis, "doc_info": sticker_set_doc_mime_type, "title": sticker_set.set.title, }
+                sticker_set_info = {"set_id": sticker_set.set.id, "access_hash": sticker_set.set.access_hash, "short_name": sticker_set.set.short_name, "is_emoji": sticker_set.set.emojis, "doc_info": doc_info, "title": sticker_set.set.title, }
                 estimated_seconds = estimate_wait_time(sticker_set_info['doc_info'])
                 
                 await queue_manager.add_to_queue(
@@ -1225,9 +1225,9 @@ class BotHandlers:
             # Perform a silent cache check
             set_id = sticker_set.set.id
             set_title = sticker_set.set.title
-            set_count = len(sticker_set.documents)
+            doc_info = [[doc.id, doc.mime_type] for doc in sticker_set.documents]
 
-            cache_status, channel_id, message_ids = await db.is_pack_cached(set_id, set_title, set_count)
+            cache_status, channel_id, message_ids = await db.is_pack_cached(set_id, set_title, doc_info)
 
             if cache_status == 'hit':
                 messages = await self.ctx.client.get_messages(channel_id, ids=message_ids)
@@ -1248,8 +1248,7 @@ class BotHandlers:
             pack_url = f"https://t.me/add{'emoji' if is_emoji else 'stickers'}/{sticker_set.set.short_name}"
             log_id = await db.log_conversion_request(system_id, set_id, pack_url, is_emoji)
             
-            sticker_set_doc_mime_type = [doc.mime_type for doc in sticker_set.documents]
-            sticker_set_info = {"set_id": sticker_set.set.id, "access_hash": sticker_set.set.access_hash, "short_name": sticker_set.set.short_name, "is_emoji": sticker_set.set.emojis, "doc_info": sticker_set_doc_mime_type, "title": sticker_set.set.title, }
+            sticker_set_info = {"set_id": sticker_set.set.id, "access_hash": sticker_set.set.access_hash, "short_name": sticker_set.set.short_name, "is_emoji": sticker_set.set.emojis, "doc_info": doc_info, "title": sticker_set.set.title, }
             estimated_seconds = estimate_wait_time(sticker_set_info['doc_info'])
             
             position = await queue_manager.add_to_queue(

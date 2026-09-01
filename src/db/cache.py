@@ -44,7 +44,7 @@ async def update_cache_channel_file_count(channel_id: int, file_delta: int):
             file_delta, channel_id
         )
 
-async def is_pack_cached(set_id: int, current_title: str, current_sticker_count: int) -> Tuple[Optional[str], Optional[int], Optional[List[int]]]:
+async def is_pack_cached(set_id: int, current_title: str, current_doc_info: List[List[int | str]]) -> Tuple[Optional[str], Optional[int], Optional[List[int]]]:
     """
     Checks if a pack is cached and if the cache is up-to-date.
     Returns: A tuple (status, channel_id, message_ids)
@@ -52,19 +52,21 @@ async def is_pack_cached(set_id: int, current_title: str, current_sticker_count:
     pool = get_pool()
     async with pool.acquire() as conn, conn.transaction():
 
-        cache_result = await conn.fetchrow("SELECT channel_id, message_ids FROM cached_packs WHERE set_id = $1", set_id,)
+        result = await conn.fetchrow("""
+            SELECT cp.channel_id, cp.message_ids, ssd.pack_title, ssd.doc_info
+            FROM cached_packs cp
+            LEFT JOIN sticker_set_details ssd ON cp.set_id = ssd.set_id
+            WHERE cp.set_id = $1""", set_id,)
 
-        if not cache_result:
+        if not result:
             return 'miss', None, None
 
-        channel_id = cache_result['channel_id']
-        message_ids = json.loads(cache_result['message_ids'])
+        channel_id = result['channel_id']
+        message_ids = json.loads(result['message_ids'])
 
-        stats_result = await conn.fetchrow("SELECT pack_title, sticker_count FROM sticker_set_details WHERE set_id = $1", set_id,)
-
-        if not stats_result or \
-           stats_result['pack_title'] != current_title or \
-           stats_result['sticker_count'] != current_sticker_count:
+        if result['pack_title'] != current_title or \
+           not result['doc_info'] or \
+           json.loads(result['doc_info']) != current_doc_info:
             logger.warning(f"Stale cache detected for pack {set_id}.")
             return 'stale', channel_id, message_ids
         
@@ -75,7 +77,7 @@ async def record_cache_hit(set_id: int, is_system_process: bool = False, user_id
     """Updates a pack's stats to reflect a cache hit, increasing its score."""
     pool = get_pool()
     pack_info = await pool.fetchrow(
-        "SELECT short_name, is_emoji, pack_title, sticker_count, last_conversion_duration FROM sticker_set_details WHERE set_id = $1",
+        "SELECT short_name, is_emoji, pack_title, sticker_count, doc_info, last_conversion_duration FROM sticker_set_details WHERE set_id = $1",
         set_id
     )
     if pack_info:
@@ -85,6 +87,7 @@ async def record_cache_hit(set_id: int, is_system_process: bool = False, user_id
             is_emoji=pack_info['is_emoji'],
             pack_title=pack_info['pack_title'],
             sticker_count=pack_info['sticker_count'],
+            doc_info=pack_info['doc_info'],
             conversion_duration=pack_info['last_conversion_duration'],
             is_system_process=is_system_process,
             user_id=user_id
