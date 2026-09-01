@@ -25,7 +25,7 @@ class VideoToWebPConverter:
     MAX_FPS = 1000.0 / MIN_FRAME_DURATION_MS
 
 
-    def __init__(self, width: int = -1, height: int = -1, quality: int = 40,
+    def __init__(self, width: int = -1, height: int = -1, quality: int = 80,
                 frame_cap: bool = True, max_frames: int = 180, max_size: int = None,
                 keep_aspect: bool = True, allow_upscale: bool = True, pad: bool = True,
                 fps: float = 30.0, preserve_timing: bool = True, compress_faster: bool = False):
@@ -712,7 +712,7 @@ class VideoToWebPConverter:
 
 def convert_video_to_webp(video_path: str, webp_path: str, 
                        width: int = -1, height: int = -1, 
-                       quality: int = 40,
+                       quality: int = 80,
                        frame_cap: bool = True,
                        max_frames: int = 180,
                        max_size: int = None,
@@ -731,7 +731,7 @@ def convert_video_to_webp(video_path: str, webp_path: str,
         webp_path: Path to output WebP file
         width: Output width in pixels (default: Original)
         height: Output height in pixels (default: Original)
-        quality: WebP quality 0-100 (default: 40)
+        quality: WebP quality 0-100 (default: 80)
         frame_cap: Whether to cap the number of frames (default: True)
         max_frames: Maximum number of frames to render (default: 180). Ignored if frame cap is disabled.
         max_size: Maximum file size in kilobytes (default: None). This will compress the WebP by reducing quality and number of frames to meet the target size.
@@ -779,7 +779,7 @@ if __name__ == "__main__":
     # Optional arguments with default values
     parser.add_argument("--width", type=int, default=-1, help="Output width in pixels. Default: Original.")
     parser.add_argument("--height", type=int, default=-1, help="Output height in pixels. Default: Original.")
-    parser.add_argument("--quality", type=int, default=40, help="WebP quality (0-100). Default: 40.")
+    parser.add_argument("--quality", type=int, default=80, help="WebP quality (0-100). Default: 80.")
     parser.add_argument("--max-frames", type=int, default=180, 
                         help="Maximum number of frames to render. Default: 180.\n(Note: This is ignored if you disable frame capping).")
     parser.add_argument("--max-size", type=int, default=None,
