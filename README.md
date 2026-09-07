@@ -3,7 +3,7 @@
 
 Welcome to the official page for the **Telegram to WhatsApp Stickers Transfer** bot! This simple yet powerful tool helps you bring your favorite Telegram stickers and emojis over to WhatsApp.
 
-**Find the bot on Telegram: [@TGtoWAstickerConverterBot](https://t.me/TGtoWAstickerConverterBot)**
+**Find the bot on Telegram: [@TgtoWhatsp_Bot](https://t.me/TgtoWhatsp_Bot)**
 
 <p align="left">
   <img src="./assets/icons/bot_icon.png" alt="icon" width="300">
